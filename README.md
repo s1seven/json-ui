@@ -2,6 +2,7 @@
 
 A dynamic user interface for creating JSON documents according to a JSON schema.
 
+![JSON UI Screenshot](./screenshot.png)
 
 ## JSON UI decision tree
 ```
