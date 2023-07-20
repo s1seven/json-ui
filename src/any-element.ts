@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { LitElement, html, nothing, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 
@@ -34,20 +34,49 @@ export class AnyElement extends LitElement {
       5
     );
 
+    const title = html`
+      <div>
+        ${this.level === 0
+          ? html`<h2 class="text-[1.25rem] leading-8 text-slate-700">
+              ${schema.title}
+            </h2>`
+          : html`<h3 class="text-[1rem] leading-7 font-medium text-slate-700">
+              ${schema.title}
+            </h3>`}
+        ${schema.description
+          ? html`<p class="text-slate-500 text-base mb-4">
+              ${schema.description}
+            </p>`
+          : nothing}
+      </div>
+    `;
+
+    const anyOf = schema.anyOf
+      ? html`<checkbox-group-element
+          .type="${schema.type}"
+          .level=${this.level}
+          .baseSchema="${this.baseSchema}"
+          .schemas=${schema.anyOf}
+        ></checkbox-group-element>`
+      : nothing;
+
+    if (anyOf !== nothing) {
+      console.log("anyOf", schema);
+    }
+
     if (schema.type === "array")
       return html`
-        <label
-          >${schema.title}
-          <array-element
-            .level=${this.level}
-            .baseSchema="${this.baseSchema}"
-            .arraySchema=${schema}
-          ></array-element>
-        </label>
+        ${title} ${anyOf}
+        <array-element
+          .level=${this.level}
+          .baseSchema="${this.baseSchema}"
+          .arraySchema=${schema}
+        ></array-element>
       `;
 
     if (schema.type === "object") {
       return html`
+        ${title} ${anyOf}
         <object-element
           .level=${this.level}
           .baseSchema=${this.baseSchema}
@@ -58,10 +87,8 @@ export class AnyElement extends LitElement {
 
     if (schema.type === "string") {
       return html`
-        <label
-          >${schema.title}
-          <string-element .value=${"hello"}></string-element>
-        </label>
+        ${title} ${anyOf}
+        <string-element .value=${"hello"}></string-element>
       `;
     }
 
@@ -71,21 +98,19 @@ export class AnyElement extends LitElement {
       const options = schema.enum as string[] | undefined;
       if (options)
         return html`
-          <label
-            >${schema.title}
-            <string-dropdown-element
-              .options=${options}
-            ></string-dropdown-element>
-          </label>
+          ${title} ${anyOf}
+          <string-dropdown-element
+            .options=${options}
+          ></string-dropdown-element>
         `;
     }
 
-    if (schema.allOf) {
-      return html`<strong>ALL OF</strong><br />`;
-    }
+    // if (schema.oneOf) {
+    //   console.log("oneOf", schema);
+    // }
 
-    console.log("no type", schema, this.schema, this.baseSchema);
+    // console.log("no type", schema, this.schema, this.baseSchema);
 
-    return html`no type<br />`;
+    return html` ${title} ${anyOf} no type<br />`;
   }
 }

@@ -58,20 +58,6 @@ export class ObjectElement extends LitElement {
           ? "shadow-sm ring-1 ring-slate-700/10 rounded-lg px-4 py-6"
           : ""} flex flex-col gap-4"
       >
-        <div>
-          ${this.level === 0
-            ? html`<h2 class="text-[1.25rem] leading-8 text-slate-700">
-                ${this.title}
-              </h2>`
-            : html`<h3 class="text-[1rem] leading-7 font-medium text-slate-700">
-                ${this.title}
-              </h3>`}
-          ${this.description
-            ? html`<p class="text-slate-500 text-base mb-4">
-                ${this.description}
-              </p>`
-            : nothing}
-        </div>
         ${this.fields.map(
           (field) => html`<any-element
             .level="${this.level + 1}"

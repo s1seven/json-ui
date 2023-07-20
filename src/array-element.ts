@@ -3,13 +3,9 @@ import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 
 import type { JSONSchema7, JSONSchema7Definition } from "json-schema";
-import {
-  resolveAllOf,
-  resolveLocalReferences,
-} from "./resolve-local-references";
 
 /**
- * An object.
+ * An array.
  */
 
 @customElement("array-element")

@@ -53,7 +53,7 @@ export const resolveAllOf = (
 
     return allOf
       .map((entry) => resolveAllOf(entry, depth + 1))
-      .reduce((acc, curr) => deepMerge(acc, curr), {
+      .reduce((acc, curr) => deepMerge(acc, curr, ["oneOf", "anyOf"]), {
         ...child,
         allOf: void 0,
       });
@@ -61,10 +61,20 @@ export const resolveAllOf = (
   return resolve(object, 1);
 };
 
-const deepMerge = (target: any, source: any): any => {
+const deepMerge = (
+  target: any,
+  source: any,
+  preserveList: string[] = []
+): any => {
   if (typeof target !== "object" || typeof source !== "object") return source;
   for (const key in source) {
-    target[key] = deepMerge(target[key], source[key]);
+    if (preserveList.includes(key)) {
+      target[key] ??= [];
+      if (Object.hasOwn(target, key) && !Array.isArray(target[key])) {
+        target[key] = [target[key]];
+      }
+      target[key].push(source[key]);
+    } else target[key] = deepMerge(target[key], source[key], preserveList);
   }
   return target;
 };
