@@ -34,21 +34,7 @@ export class AnyElement extends LitElement {
       5
     );
 
-    if (schema.type === "array") {
-      // Enums.
-      const items = schema.items;
-      if (items && typeof items === "object" && !Array.isArray(items)) {
-        const options = items.enum as string[] | undefined;
-        if (options)
-          return html`
-            <label
-              >${schema.title}
-              <string-dropdown-element
-                .options=${options}
-              ></string-dropdown-element>
-            </label>
-          `;
-      }
+    if (schema.type === "array")
       return html`
         <label
           >${schema.title}
@@ -59,7 +45,6 @@ export class AnyElement extends LitElement {
           ></array-element>
         </label>
       `;
-    }
 
     if (schema.type === "object") {
       return html`
@@ -81,6 +66,19 @@ export class AnyElement extends LitElement {
     }
 
     if (schema.type) return html`<strong>${schema.type}</strong><br />`;
+
+    if (schema.enum) {
+      const options = schema.enum as string[] | undefined;
+      if (options)
+        return html`
+          <label
+            >${schema.title}
+            <string-dropdown-element
+              .options=${options}
+            ></string-dropdown-element>
+          </label>
+        `;
+    }
 
     if (schema.allOf) {
       return html`<strong>ALL OF</strong><br />`;

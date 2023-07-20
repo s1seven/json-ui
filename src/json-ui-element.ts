@@ -5,7 +5,7 @@ import * as schema from "./schema.json";
 import { JSONSchema7 } from "json-schema";
 
 @customElement("json-ui-element")
-export class StringDropdownElement extends LitElement {
+export class JSONUIElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
   render() {
