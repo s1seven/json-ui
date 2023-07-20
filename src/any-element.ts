@@ -58,6 +58,7 @@ export class AnyElement extends LitElement {
 
     const anyOf = schema.anyOf
       ? html`<checkbox-group-element
+          class="pb-4 block"
           .type="${schema.type}"
           .level=${this.level}
           .baseSchema="${this.baseSchema}"

@@ -31,9 +31,10 @@ export class CheckboxGroupElement extends LitElement {
             <li class="flex gap-4">
               <input
                 type="checkbox"
-                class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500"
+                class="shrink-0 mt-1 border-gray-200 rounded text-blue-600 focus:ring-blue-500"
               />
-              <any-element class="flex-1"
+              <any-element
+                class="flex-1"
                 .level=${this.level}
                 .baseSchema="${this.baseSchema}"
                 .schema="${{ type: this.type, ...schema }}"
