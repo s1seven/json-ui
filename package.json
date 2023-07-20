@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "imask": "^7.1.3",
     "lit": "^2.7.5"
   },
   "devDependencies": {

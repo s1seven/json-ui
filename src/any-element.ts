@@ -36,7 +36,6 @@ export class AnyElement extends LitElement {
     );
 
     const titleText = humanizeKey(schema.title || "");
-
     const title = titleText
       ? html`
           <div class="flex items-center gap-2 select-none">
@@ -123,7 +122,7 @@ export class AnyElement extends LitElement {
     if (schema.type === "string") {
       return html`
         ${title} ${anyOf}
-        <string-element .value=${"hello"}></string-element>
+        <string-element .schema=${schema} .value=${"hello"}></string-element>
       `;
     }
 
