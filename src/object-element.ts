@@ -38,21 +38,16 @@ export class ObjectElement extends LitElement {
   fields: JSONSchema7[] = [];
 
   firstUpdated() {
-    const resolvedSchema = resolveAllOf(
-      resolveLocalReferences(this.baseSchema, this.objectSchema, 5),
-      5
-    );
-
-    this.fields = Object.entries(resolvedSchema.properties ?? {}).map(
+    this.fields = Object.entries(this.objectSchema.properties ?? {}).map(
       ([title, value]) => ({ ...(value as JSONSchema7), title })
     );
 
-    if (resolvedSchema.title) {
-      this.title = resolvedSchema.title;
+    if (this.objectSchema.title) {
+      this.title = this.objectSchema.title;
     }
 
-    if (resolvedSchema.description) {
-      this.description = resolvedSchema.description;
+    if (this.objectSchema.description) {
+      this.description = this.objectSchema.description;
     }
   }
 

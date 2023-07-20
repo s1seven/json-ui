@@ -31,12 +31,7 @@ export class ArrayElement extends LitElement {
   itemsSchema?: JSONSchema7Definition;
 
   firstUpdated() {
-    const resolvedSchema = resolveAllOf(
-      resolveLocalReferences(this.baseSchema, this.arraySchema, 5),
-      5
-    );
-
-    this.itemsSchema = resolvedSchema.items as JSONSchema7Definition;
+    this.itemsSchema = this.arraySchema.items as JSONSchema7Definition;
   }
 
   render() {

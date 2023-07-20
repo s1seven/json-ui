@@ -53,10 +53,18 @@ export const resolveAllOf = (
 
     return allOf
       .map((entry) => resolveAllOf(entry, depth + 1))
-      .reduce((acc, curr) => ({ ...acc, ...curr }), {
+      .reduce((acc, curr) => deepMerge(acc, curr), {
         ...child,
         allOf: void 0,
       });
   };
   return resolve(object, 1);
+};
+
+const deepMerge = (target: any, source: any): any => {
+  if (typeof target !== "object" || typeof source !== "object") return source;
+  for (const key in source) {
+    target[key] = deepMerge(target[key], source[key]);
+  }
+  return target;
 };
