@@ -4,7 +4,7 @@ import styles from "./index.css?inline";
 import * as schema from "./schema.json";
 import { JSONSchema7 } from "json-schema";
 
-@customElement("json-schema-editor-element")
+@customElement("json-ui-element")
 export class StringDropdownElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
