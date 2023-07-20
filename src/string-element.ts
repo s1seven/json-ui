@@ -22,14 +22,13 @@ export class StringElement extends LitElement {
   render() {
     return html`
       <div
-        class="relative pointer-events-auto w-[28.125rem] text-[0.8125rem] leading-5 text-slate-700 select-none mt-2"
+        class="relative pointer-events-auto w-full text-[0.8125rem] leading-5 text-slate-700 select-none mt-2"
       >
-        <div class=" ">
-          <input
-            @input=${this.handleChange}
-            class="rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-slate-700/10 cursor-text focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-          />
-        </div>
+        <input
+          type="text"
+          @input=${this.handleChange}
+          class="rounded-md bg-white px-3 py-2 shadow-sm ring-1 border-none ring-slate-700/10 cursor-text focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+        />
       </div>
     `;
   }

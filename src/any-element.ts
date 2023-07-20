@@ -7,6 +7,7 @@ import {
   resolveAllOf,
   resolveLocalReferences,
 } from "./resolve-local-references";
+import { humanizeKey } from "./humanize";
 
 /**
  * Any element.
@@ -34,22 +35,26 @@ export class AnyElement extends LitElement {
       5
     );
 
-    const title = html`
-      <div>
-        ${this.level === 0
-          ? html`<h2 class="text-[1.25rem] leading-8 text-slate-700">
-              ${schema.title}
-            </h2>`
-          : html`<h3 class="text-[1rem] leading-7 font-medium text-slate-700">
-              ${schema.title}
-            </h3>`}
-        ${schema.description
-          ? html`<p class="text-slate-500 text-base mb-4">
-              ${schema.description}
-            </p>`
-          : nothing}
-      </div>
-    `;
+    const titleText = humanizeKey(schema.title || "");
+
+    const title = titleText
+      ? html`
+          <div class="flex items-center gap-2 select-none">
+            ${this.level === 0
+              ? html`<h2 class="text-[1.25rem] leading-8 text-slate-700">
+                  ${titleText}
+                </h2>`
+              : html`<h3
+                  class="text-[1rem] leading-7 font-medium text-slate-700"
+                >
+                  ${titleText}
+                </h3>`}
+            ${schema.description
+              ? html`<tooltip-element>${schema.description}</tooltip-element>`
+              : nothing}
+          </div>
+        `
+      : nothing;
 
     const anyOf = schema.anyOf
       ? html`<checkbox-group-element
@@ -60,13 +65,9 @@ export class AnyElement extends LitElement {
         ></checkbox-group-element>`
       : nothing;
 
-    if (anyOf !== nothing) {
-      console.log("anyOf", schema);
-    }
-
-    if (schema.type === "array")
-      return html`
-        ${title} ${anyOf}
+    if (schema.type === "array") {
+      const arrayContent = html`
+        ${anyOf}
         <array-element
           .level=${this.level}
           .baseSchema="${this.baseSchema}"
@@ -74,14 +75,47 @@ export class AnyElement extends LitElement {
         ></array-element>
       `;
 
-    if (schema.type === "object") {
+      if (title === nothing) return arrayContent;
+
       return html`
-        ${title} ${anyOf}
+        <accordion-element .isOpen=${this.level < 2}>
+          <div slot="header">${title}</div>
+          <div
+            slot="content"
+            class="${this.level > 0
+              ? "shadow-sm ring-1 ring-slate-700/10 ring-inset rounded-lg px-4 py-6"
+              : ""}"
+          >
+            ${arrayContent}
+          </div>
+        </accordion-element>
+      `;
+    }
+
+    if (schema.type === "object") {
+      const objectContent = html`
+        ${anyOf}
         <object-element
           .level=${this.level}
           .baseSchema=${this.baseSchema}
           .objectSchema=${schema}
         ></object-element>
+      `;
+
+      if (title === nothing) return objectContent;
+
+      return html`
+        <accordion-element .isOpen=${this.level < 2}>
+          <div slot="header">${title}</div>
+          <div
+            slot="content"
+            class="${this.level > 0
+              ? "shadow-sm ring-1 ring-slate-700/10 ring-inset rounded-lg px-4 py-6"
+              : ""}"
+          >
+            ${objectContent}
+          </div>
+        </accordion-element>
       `;
     }
 
@@ -105,12 +139,8 @@ export class AnyElement extends LitElement {
         `;
     }
 
-    // if (schema.oneOf) {
-    //   console.log("oneOf", schema);
-    // }
+    if (anyOf === nothing) throw ["could not figure out schema type", schema];
 
-    // console.log("no type", schema, this.schema, this.baseSchema);
-
-    return html` ${title} ${anyOf} no type<br />`;
+    return html` ${title} ${anyOf}`;
   }
 }

@@ -71,7 +71,7 @@ export class StringDropdownElement extends LitElement {
           @keydown="${this.ifSelectKey(() => (this.show = true))}"
           @click="${() => (this.show = true)}"
         >
-          ${this.value}
+          ${this.value || html`&nbsp;`}
           <svg
             class="h-5 w-5 text-gray-400"
             viewBox="0 0 20 20"

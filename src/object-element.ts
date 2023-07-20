@@ -53,11 +53,7 @@ export class ObjectElement extends LitElement {
 
   render() {
     return html`
-      <div
-        class="${this.level > 0
-          ? "shadow-sm ring-1 ring-slate-700/10 rounded-lg px-4 py-6"
-          : ""} flex flex-col gap-4"
-      >
+      <div class="flex flex-col gap-4">
         ${this.fields.map(
           (field) => html`<any-element
             .level="${this.level + 1}"

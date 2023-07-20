@@ -25,7 +25,7 @@ export class CheckboxGroupElement extends LitElement {
 
   render() {
     return html`Choose one or more:
-      <ul>
+      <ul class="flex flex-col gap-4">
         ${this.schemas.map(
           (schema) => html`
             <li class="flex gap-4">
@@ -33,7 +33,7 @@ export class CheckboxGroupElement extends LitElement {
                 type="checkbox"
                 class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500"
               />
-              <any-element
+              <any-element class="flex-1"
                 .level=${this.level}
                 .baseSchema="${this.baseSchema}"
                 .schema="${{ type: this.type, ...schema }}"

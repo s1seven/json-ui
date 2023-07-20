@@ -42,7 +42,7 @@ export class ArrayElement extends LitElement {
             ></any-element>
           </li>`
         )}
-        <li class="ml-6 pl-4">
+        <li class="ml-6 pl-4 list-disc">
           <button
             @click="${() => (this.value = [...this.value, {}])}"
             class="text-[0.8125rem] font-bold rounded-md inline-flex items-center justify-center gap-1 px-2 py-1 shadow-sm ring-1 ring-slate-700/30 cursor-default focus:outline-none focus:ring-2 focus:ring-indigo-500"
