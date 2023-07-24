@@ -1,12 +1,8 @@
-import { LitElement, html, nothing, unsafeCSS } from "lit";
+import { LitElement, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 
 import type { JSONSchema7 } from "json-schema";
-import {
-  resolveAllOf,
-  resolveLocalReferences,
-} from "./resolve-local-references";
 
 /**
  * An object.
@@ -16,8 +12,8 @@ import {
 export class ObjectElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
-  @property({ type: Number })
-  readonly level = 0;
+  @property({ type: Array })
+  readonly path: (string | number)[] = [];
 
   @property({ type: Object })
   readonly baseSchema: JSONSchema7 = {};

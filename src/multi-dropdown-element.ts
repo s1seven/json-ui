@@ -5,6 +5,8 @@ import { ifSelectKey } from "./pure-functions/if-select-key";
 
 /**
  * Select one string option from a list of options.
+ * dispatches:
+ * - value-changed (string[])
  */
 
 @customElement("multi-dropdown-element")
@@ -46,7 +48,9 @@ export class MultiDropdownElement extends LitElement {
     idx === -1
       ? (this.value = [...this.value, value])
       : (this.value = this.value.filter((_, i) => i !== idx));
-    this.dispatchEvent(new CustomEvent("value-changed", { detail: value }));
+    this.dispatchEvent(
+      new CustomEvent("value-changed", { detail: this.value })
+    );
   }
 
   hide() {
@@ -138,7 +142,7 @@ export class MultiDropdownElement extends LitElement {
                   : nothing}
                 ${Array.from(this.filteredOptions).map(
                   (option) => html`<li
-                    class="px-3 py-2 group outline-none flex items-center justify-between cursor-pointer"
+                    class="px-3 hover:bg-slate-700/10 focus:bg-slate-700/10 py-2 group outline-none flex items-center justify-between cursor-pointer"
                     tabindex="0"
                     role="option"
                     data-value="${option}"

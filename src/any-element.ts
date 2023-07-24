@@ -1,4 +1,4 @@
-import { LitElement, html, nothing, unsafeCSS } from "lit";
+import { LitElement, TemplateResult, html, nothing, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 
@@ -8,6 +8,7 @@ import {
   resolveLocalReferences,
 } from "./resolve-local-references";
 import { humanizeKey } from "./humanize";
+import { dispatchValueChanged } from "./pure-functions/dispatch-value-changed";
 
 /**
  * Any element.
@@ -17,8 +18,8 @@ import { humanizeKey } from "./humanize";
 export class AnyElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
-  @property({ type: Number })
-  readonly level = 0;
+  @property({ type: Array })
+  readonly path: (string | number)[] = [];
 
   @property({ type: Object })
   readonly baseSchema: JSONSchema7 = {};
@@ -55,8 +56,9 @@ export class AnyElement extends LitElement {
         `
       : nothing;
 
-    const anyOf = schema.anyOf
+    const anyOf: TemplateResult | typeof nothing = schema.anyOf
       ? html`<checkbox-group-element
+          @value-changed="${dispatchValueChanged(this)}"
           class="pb-4 block"
           .type="${schema.type}"
           .level=${this.level}
@@ -71,13 +73,15 @@ export class AnyElement extends LitElement {
         return html`
           ${title} ${anyOf}
           <multi-dropdown-element
+            @value-changed="${dispatchValueChanged(this)}"
             .options=${enumItems}
           ></multi-dropdown-element>
         `;
       }
-      const arrayContent = html`
+      const arrayContent: TemplateResult = html`
         ${anyOf}
         <array-element
+          @value-changed=${dispatchValueChanged(this)}
           .level=${this.level}
           .baseSchema="${this.baseSchema}"
           .arraySchema=${schema}
@@ -102,9 +106,10 @@ export class AnyElement extends LitElement {
     }
 
     if (schema.type === "object") {
-      const objectContent = html`
+      const objectContent: TemplateResult = html`
         ${anyOf}
         <object-element
+          @value-changed=${dispatchValueChanged(this)}
           .level=${this.level}
           .baseSchema=${this.baseSchema}
           .objectSchema=${schema}
@@ -131,7 +136,11 @@ export class AnyElement extends LitElement {
     if (schema.type === "string") {
       return html`
         ${title} ${anyOf}
-        <string-element .schema=${schema} .value=${"hello"}></string-element>
+        <string-element
+          @value-changed=${dispatchValueChanged(this)}
+          .schema=${schema}
+          .value=${"hello"}
+        ></string-element>
       `;
     }
 
@@ -143,6 +152,7 @@ export class AnyElement extends LitElement {
         return html`
           ${title} ${anyOf}
           <single-dropdown-element
+            @value-changed=${dispatchValueChanged(this)}
             .options=${options}
           ></single-dropdown-element>
         `;

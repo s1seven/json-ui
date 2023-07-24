@@ -5,6 +5,8 @@ import { ifSelectKey } from "./pure-functions/if-select-key";
 
 /**
  * Select one string option from a list of options.
+ * dispatches:
+ * - value-changed (string)
  */
 
 @customElement("single-dropdown-element")

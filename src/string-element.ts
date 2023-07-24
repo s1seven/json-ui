@@ -131,7 +131,7 @@ export class StringElement extends LitElement {
       ${errors
         ? errors.map(
             (error) => html`<span
-              class="text-sm block truncate pt-1 text-red-500"
+              class="text-sm block pt-1 text-red-500"
               >${error.message}</span
             >`
           )

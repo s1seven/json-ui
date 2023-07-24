@@ -11,8 +11,8 @@ import { JSONSchema7, JSONSchema7TypeName } from "json-schema";
 export class CheckboxGroupElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
-  @property({ type: Number })
-  readonly level = 0;
+  @property({ type: Array })
+  readonly path: (string | number)[] = [];
 
   @property({ type: String })
   readonly type?: JSONSchema7TypeName;

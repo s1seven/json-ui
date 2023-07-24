@@ -12,8 +12,8 @@ import type { JSONSchema7, JSONSchema7Definition } from "json-schema";
 export class ArrayElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
-  @property({ type: Number })
-  readonly level = 0;
+  @property({ type: Array })
+  readonly path: (string | number)[] = [];
 
   @property({ type: Object })
   readonly baseSchema: JSONSchema7 = {};
