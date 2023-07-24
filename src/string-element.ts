@@ -60,22 +60,14 @@ export class StringElement extends LitElement {
     if (format === "date") {
       IMask(inputEl, {
         mask: Date,
-        // min: new Date(1990, 0, 1),
-        // max: new Date(2020, 0, 1),
         lazy: false,
       });
     } else if (format === "email") {
       IMask(inputEl, {
         mask: /^\S*@?\S*$/,
-        // min: new Date(1990, 0, 1),
-        // max: new Date(2020, 0, 1),
         lazy: false,
       });
     }
-
-    // IMask(inputEl, {
-    //   mask: /^[1-6]\d{0,5}$/,
-    // });
   }
 
   handleChange(event: any) {
@@ -105,7 +97,7 @@ export class StringElement extends LitElement {
         </div>
       </div>
       ${this.schema.pattern
-        ? html`<span class="text-sm inline-block truncate pt-1 text-slate-500"
+        ? html`<span class="text-sm block truncate pt-1 text-slate-500"
             >${this.schema.pattern}</span
           >`
         : ""}

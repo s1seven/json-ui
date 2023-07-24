@@ -66,6 +66,15 @@ export class AnyElement extends LitElement {
       : nothing;
 
     if (schema.type === "array") {
+      const enumItems = (schema?.items as JSONSchema7).enum;
+      if (enumItems) {
+        return html`
+          ${title} ${anyOf}
+          <multi-dropdown-element
+            .options=${enumItems}
+          ></multi-dropdown-element>
+        `;
+      }
       const arrayContent = html`
         ${anyOf}
         <array-element
@@ -133,9 +142,9 @@ export class AnyElement extends LitElement {
       if (options)
         return html`
           ${title} ${anyOf}
-          <string-dropdown-element
+          <single-dropdown-element
             .options=${options}
-          ></string-dropdown-element>
+          ></single-dropdown-element>
         `;
     }
 

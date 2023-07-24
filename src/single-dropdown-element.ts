@@ -1,13 +1,14 @@
 import { LitElement, html, nothing, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
+import { ifSelectKey } from "./pure-functions/if-select-key";
 
 /**
  * Select one string option from a list of options.
  */
 
-@customElement("string-dropdown-element")
-export class StringDropdownElement extends LitElement {
+@customElement("single-dropdown-element")
+export class SingleDropdownElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
   @property({ type: Array })
@@ -51,16 +52,10 @@ export class StringDropdownElement extends LitElement {
     this.filteredOptions = this.options;
   }
 
-  ifSelectKey(callback: any) {
-    return (event: KeyboardEvent) =>
-      ["Enter", " ", "ArrowDown"].includes(event.key) &&
-      callback.bind(this)(event);
-  }
-
   render() {
     return html`
       <div
-        class="relative pointer-events-auto w-[28.125rem] text-[0.8125rem] leading-5 text-slate-700 select-none ${this
+        class="relative pointer-events-auto w-full text-[0.8125rem] leading-5 text-slate-700 select-none ${this
           .show
           ? "z-10"
           : ""}"
@@ -68,7 +63,7 @@ export class StringDropdownElement extends LitElement {
         <div
           tabindex="0"
           class="mt-2 flex items-center justify-between rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-slate-700/30 cursor-default focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          @keydown="${this.ifSelectKey(() => (this.show = true))}"
+          @keydown="${ifSelectKey(() => (this.show = true))}"
           @click="${() => (this.show = true)}"
         >
           ${this.value || html`&nbsp;`}
@@ -111,7 +106,7 @@ export class StringDropdownElement extends LitElement {
                     role="option"
                     data-value="${option}"
                     @click="${this.handleSelect}"
-                    @keydown="${this.ifSelectKey(this.handleSelect)}"
+                    @keydown="${ifSelectKey((ev) => this.handleSelect(ev))}"
                   >
                     ${option}
                     ${this.value === option
