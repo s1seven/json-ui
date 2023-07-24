@@ -3,6 +3,8 @@ import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { JSONSchema7 } from "json-schema";
 import IMask from "imask";
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
 
 /**
  * A string.
@@ -59,7 +61,24 @@ export class StringElement extends LitElement {
 
     if (format === "date") {
       IMask(inputEl, {
-        mask: Date,
+        mask: "YYYY-MM-DD",
+        blocks: {
+          YYYY: {
+            mask: IMask.MaskedRange,
+            from: 1900,
+            to: 2099,
+          },
+          MM: {
+            mask: IMask.MaskedRange,
+            from: 1,
+            to: 12,
+          },
+          DD: {
+            mask: IMask.MaskedRange,
+            from: 1,
+            to: 31,
+          },
+        },
         lazy: false,
       });
     } else if (format === "email") {
@@ -76,7 +95,15 @@ export class StringElement extends LitElement {
     this.dispatchEvent(new CustomEvent("value-changed", { detail: value }));
   }
 
+  validate() {
+    const ajv = new Ajv();
+    addFormats(ajv);
+    const validate = ajv.compile(this.schema);
+    return validate(this.value) ? void 0 : validate.errors;
+  }
+
   render() {
+    const errors = this.validate();
     return html`
       <div
         class="relative pointer-events-auto w-full text-slate-700 select-none mt-2"
@@ -91,7 +118,7 @@ export class StringElement extends LitElement {
           </div>
           <input
             type="text"
-            @input=${this.handleChange}
+            @change=${this.handleChange}
             class="px-3 py-2 focus:ring-0 bg-transparent border-none text-[0.8125rem] focus:outline-none w-full"
           />
         </div>
@@ -100,6 +127,14 @@ export class StringElement extends LitElement {
         ? html`<span class="text-sm block truncate pt-1 text-slate-500"
             >${this.schema.pattern}</span
           >`
+        : ""}
+      ${errors
+        ? errors.map(
+            (error) => html`<span
+              class="text-sm block truncate pt-1 text-red-500"
+              >${error.message}</span
+            >`
+          )
         : ""}
     `;
   }
