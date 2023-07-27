@@ -1,42 +1,28 @@
-import { LitElement, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import styles from "./index.css?inline";
+import { html } from "lit";
+import { customElement } from "lit/decorators.js";
 
-import type { JSONSchema7, JSONSchema7Definition } from "json-schema";
+import type { JSONSchema7Definition } from "json-schema";
+import { BaseElement } from "./base-element";
 
 /**
  * An array.
  */
 
 @customElement("array-element")
-export class ArrayElement extends LitElement {
-  static readonly styles = unsafeCSS(styles);
-
-  @property({ type: Array })
-  readonly path: (string | number)[] = [];
-
-  @property({ type: Object })
-  readonly baseSchema: JSONSchema7 = {};
-
-  @property({ type: Object })
-  readonly arraySchema: JSONSchema7 = {};
-
-  @property({ type: Array })
-  value: any[] = [];
-
+export class ArrayElement extends BaseElement<any[]> {
   itemsSchema?: JSONSchema7Definition;
 
   firstUpdated() {
-    this.itemsSchema = this.arraySchema.items as JSONSchema7Definition;
+    this.itemsSchema = this.schema.items as JSONSchema7Definition;
   }
 
   render() {
     return html`
       <ol class="mt-4 flex flex-col gap-4">
-        ${this.value.map(
-          (_) => html`<li class="list-decimal ml-6 pl-4">
+        ${(this.value || []).map(
+          (_, i) => html`<li class="list-decimal ml-6 pl-4">
             <any-element
-              .level=${this.level}
+              .path=${[...this.path, i]}
               .baseSchema="${this.baseSchema}"
               .schema="${this.itemsSchema}"
             ></any-element>
@@ -44,7 +30,7 @@ export class ArrayElement extends LitElement {
         )}
         <li class="ml-6 pl-4 list-disc">
           <button
-            @click="${() => (this.value = [...this.value, {}])}"
+            @click="${() => (this.value = [...(this.value || []), {}])}"
             class="text-[0.8125rem] font-bold rounded-md inline-flex items-center justify-center gap-1 px-2 py-1 shadow-sm ring-1 ring-slate-700/30 cursor-default focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <svg

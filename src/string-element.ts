@@ -5,6 +5,8 @@ import { JSONSchema7 } from "json-schema";
 import IMask from "imask";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
+import { dispatchValueChanged } from "./pure-functions/dispatch-value-changed";
+import { BaseElement } from "./base-element";
 
 /**
  * A string.
@@ -41,15 +43,7 @@ const icons: Record<string, string | TemplateResult> = {
 };
 
 @customElement("string-element")
-export class StringElement extends LitElement {
-  static readonly styles = unsafeCSS(styles);
-
-  @property({ type: String })
-  value = "";
-
-  @property({ type: Object })
-  readonly schema: JSONSchema7 = {};
-
+export class StringElement extends BaseElement<string> {
   @property({ type: String })
   icon?: string | TemplateResult;
 
@@ -92,7 +86,12 @@ export class StringElement extends LitElement {
   handleChange(event: any) {
     const value = event.target.value;
     this.value = value;
-    this.dispatchEvent(new CustomEvent("value-changed", { detail: value }));
+    dispatchValueChanged(this)({
+      detail: {
+        path: this.path,
+        value,
+      },
+    });
   }
 
   validate() {
@@ -130,8 +129,7 @@ export class StringElement extends LitElement {
         : ""}
       ${errors
         ? errors.map(
-            (error) => html`<span
-              class="text-sm block pt-1 text-red-500"
+            (error) => html`<span class="text-sm block pt-1 text-red-500"
               >${error.message}</span
             >`
           )

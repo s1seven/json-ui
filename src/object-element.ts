@@ -1,58 +1,55 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 
 import type { JSONSchema7 } from "json-schema";
+import { BaseElement } from "./base-element";
+import { dispatchValueChanged } from "./pure-functions/dispatch-value-changed";
 
 /**
  * An object.
  */
 
 @customElement("object-element")
-export class ObjectElement extends LitElement {
-  static readonly styles = unsafeCSS(styles);
-
-  @property({ type: Array })
-  readonly path: (string | number)[] = [];
-
-  @property({ type: Object })
-  readonly baseSchema: JSONSchema7 = {};
-
-  @property({ type: Object })
-  readonly objectSchema: JSONSchema7 = {};
-
-  @property({ type: Object })
-  value: Object | undefined = {};
-
-  @property({ type: String })
+export class ObjectElement extends BaseElement<Object> {
   title = "";
 
   @property({ type: String })
   description = "";
 
   @property({ type: Array })
-  fields: JSONSchema7[] = [];
+  fields: [key: string, schema: JSONSchema7][] = [];
 
   firstUpdated() {
-    this.fields = Object.entries(this.objectSchema.properties ?? {}).map(
-      ([title, value]) => ({ ...(value as JSONSchema7), title })
-    );
+    this.fields = Object.entries(this.schema.properties ?? {}) as [
+      key: string,
+      schema: JSONSchema7
+    ][];
 
-    if (this.objectSchema.title) {
-      this.title = this.objectSchema.title;
+    if (this.schema.title) {
+      this.title = this.schema.title;
     }
 
-    if (this.objectSchema.description) {
-      this.description = this.objectSchema.description;
+    if (this.schema.description) {
+      this.description = this.schema.description;
     }
+  }
+
+  // This is a silent update so that the component does not re-render.
+  valueChanged(key: string, value: any) {
+    if (!this.value) this.value = {};
+    this.value[key] = value;
   }
 
   render() {
     return html`
       <div class="flex flex-col gap-4">
         ${this.fields.map(
-          (field) => html`<any-element
-            .level="${this.level + 1}"
+          ([key, field]) => html`<any-element
+            @value-changed=${(ev: CustomEvent<any>) =>
+              this.valueChanged(key, ev.detail)}
+            .path=${[...this.path, key]}
+            .key=${key}
             .baseSchema="${this.baseSchema}"
             .schema="${field}"
           ></any-element>`

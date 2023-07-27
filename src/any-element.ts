@@ -1,6 +1,5 @@
-import { LitElement, TemplateResult, html, nothing, unsafeCSS } from "lit";
+import { TemplateResult, html, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import styles from "./index.css?inline";
 
 import type { JSONSchema7 } from "json-schema";
 import {
@@ -9,26 +8,16 @@ import {
 } from "./resolve-local-references";
 import { humanizeKey } from "./humanize";
 import { dispatchValueChanged } from "./pure-functions/dispatch-value-changed";
+import { BaseElement } from "./base-element";
 
 /**
  * Any element.
  */
 
 @customElement("any-element")
-export class AnyElement extends LitElement {
-  static readonly styles = unsafeCSS(styles);
-
-  @property({ type: Array })
-  readonly path: (string | number)[] = [];
-
-  @property({ type: Object })
-  readonly baseSchema: JSONSchema7 = {};
-
-  @property({ type: Object })
-  readonly schema: JSONSchema7 = {};
-
-  @property({ type: Array })
-  value: any[] = [];
+export class AnyElement extends BaseElement<any> {
+  @property({ type: String })
+  readonly key?: string;
 
   render() {
     const schema = resolveAllOf(
@@ -36,7 +25,7 @@ export class AnyElement extends LitElement {
       5
     );
 
-    const titleText = humanizeKey(schema.title || "");
+    const titleText = humanizeKey(this.key || schema.title || "");
     const title = titleText
       ? html`
           <div class="flex items-center gap-2 select-none">
@@ -61,7 +50,7 @@ export class AnyElement extends LitElement {
           @value-changed="${dispatchValueChanged(this)}"
           class="pb-4 block"
           .type="${schema.type}"
-          .level=${this.level}
+          .path=${this.path}
           .baseSchema="${this.baseSchema}"
           .schemas=${schema.anyOf}
         ></checkbox-group-element>`
@@ -82,9 +71,9 @@ export class AnyElement extends LitElement {
         ${anyOf}
         <array-element
           @value-changed=${dispatchValueChanged(this)}
-          .level=${this.level}
+          .path=${this.path}
           .baseSchema="${this.baseSchema}"
-          .arraySchema=${schema}
+          .schema=${schema}
         ></array-element>
       `;
 
@@ -110,9 +99,9 @@ export class AnyElement extends LitElement {
         ${anyOf}
         <object-element
           @value-changed=${dispatchValueChanged(this)}
-          .level=${this.level}
+          .path=${this.path}
           .baseSchema=${this.baseSchema}
-          .objectSchema=${schema}
+          .schema=${schema}
         ></object-element>
       `;
 

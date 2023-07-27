@@ -1,14 +1,15 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { JSONSchema7, JSONSchema7TypeName } from "json-schema";
+import { BaseElement } from "./base-element";
 
 /**
  * Checkbox group element.
  */
 
 @customElement("checkbox-group-element")
-export class CheckboxGroupElement extends LitElement {
+export class CheckboxGroupElement extends BaseElement<any> {
   static readonly styles = unsafeCSS(styles);
 
   @property({ type: Array })
@@ -27,7 +28,7 @@ export class CheckboxGroupElement extends LitElement {
     return html`Choose one or more:
       <ul class="flex flex-col gap-4">
         ${this.schemas.map(
-          (schema) => html`
+          (schema, i) => html`
             <li class="flex gap-4">
               <input
                 type="checkbox"
@@ -35,7 +36,7 @@ export class CheckboxGroupElement extends LitElement {
               />
               <any-element
                 class="flex-1"
-                .level=${this.level}
+                .path=${[...this.path, i]}
                 .baseSchema="${this.baseSchema}"
                 .schema="${{ type: this.type, ...schema }}"
               ></any-element>
