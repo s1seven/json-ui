@@ -1,0 +1,26 @@
+import { JSONSchema7 } from "json-schema";
+import omit from "lodash/omit";
+import mapValues from "lodash/mapValues";
+import isArray from "lodash/isArray";
+import isObject from "lodash/isObject";
+import { ExtractObjects, ValueOf } from "../utils/helper-types";
+import { deepMerge } from "../utils/deep-merge";
+
+type JSONSchema7Value = ValueOf<JSONSchema7>;
+
+export const resolveAllOf = <T extends JSONSchema7Value>(item: T): T =>
+  !isObject(item)
+    ? item
+    : isArray(item)
+    ? (item.map(resolveAllOf) as T)
+    : (mapValues(
+        isArray(item.allOf)
+          ? deepMerge<ExtractObjects<JSONSchema7Value>>(
+              ...(item.allOf.map(
+                resolveAllOf
+              ) as ExtractObjects<JSONSchema7Value>[]),
+              omit(item, "allOf")
+            )
+          : item,
+        resolveAllOf
+      ) as T);
