@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`it matches the snapshot 1`] = `
+exports[`anyOf applied correctly 1`] = `
 {
   "$id": "https://example.com/schemas/product",
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -23,4 +23,54 @@ exports[`it matches the snapshot 1`] = `
   ],
   "type": "object",
 }
+`;
+
+exports[`anyOf options parsed correctly 1`] = `
+[
+  {
+    "isIllogicalAfterToggle": false,
+    "isSelected": false,
+    "title": "Option 0",
+  },
+  {
+    "isIllogicalAfterToggle": false,
+    "isSelected": false,
+    "title": "Option 1",
+  },
+  {
+    "isIllogicalAfterToggle": false,
+    "isSelected": false,
+    "title": "Option 2",
+  },
+  {
+    "isIllogicalAfterToggle": false,
+    "isSelected": false,
+    "title": "Option 3",
+  },
+]
+`;
+
+exports[`selected anyOf options parsed correctly 1`] = `
+[
+  {
+    "isIllogicalAfterToggle": false,
+    "isSelected": true,
+    "title": "Option 0",
+  },
+  {
+    "isIllogicalAfterToggle": false,
+    "isSelected": true,
+    "title": "Option 1",
+  },
+  {
+    "isIllogicalAfterToggle": true,
+    "isSelected": false,
+    "title": "Option 2",
+  },
+  {
+    "isIllogicalAfterToggle": true,
+    "isSelected": false,
+    "title": "Option 3",
+  },
+]
 `;

@@ -5,12 +5,17 @@ import dts from "vite-plugin-dts";
 
 export default defineConfig({
   plugins: [tsconfigPaths(), dts()],
+  resolve: {
+    alias: {
+      "node-fetch": "cross-fetch",
+    },
+  },
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       name: "json-ui",
       fileName: "json-ui",
     },
-    rollupOptions: {}, 
+    rollupOptions: {},
   },
 });

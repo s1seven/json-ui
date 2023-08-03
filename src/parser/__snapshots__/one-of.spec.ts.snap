@@ -23,3 +23,16 @@ exports[`it matches the snapshot 1`] = `
   "type": "object",
 }
 `;
+
+exports[`oneOf options parsed correctly 1`] = `
+[
+  {
+    "isSelected": false,
+    "title": "Option 0",
+  },
+  {
+    "isSelected": true,
+    "title": "Option 1",
+  },
+]
+`;

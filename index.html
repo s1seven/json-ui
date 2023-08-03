@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JSON Editor</title>
     <link rel="stylesheet" href="./src/index.css" />
-    <!-- <script type="module" src="/src/main.ts"></script> -->
     <script type="module" src="/src/json-ui-element.ts"></script>
+    <script type="module" src="/src/view-element.ts"></script>
+    <script>
+      window.addEventListener("load", async () => {
+        const jsonUIElement = document.querySelector("json-ui-element");
+        const schema = await (await fetch("./src/schema.json")).json();
+        jsonUIElement.schema = schema;
+      });
+    </script>
   </head>
   <body>
     <div class="mx-auto my-16 max-w-xl p-4">
