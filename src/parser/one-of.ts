@@ -2,7 +2,7 @@ import { isArray, isObject, omit } from "lodash";
 import { ExtractObjects, JSONSchema7Value } from "../utils/helper-types";
 import { deepMerge } from "../utils/deep-merge";
 
-export const resolveOneOf = (item: JSONSchema7Value, index: number) => {
+export const oneOf = (item: JSONSchema7Value, index: number) => {
   if (!isObject(item) || isArray(item) || !isArray(item.oneOf)) return item;
   const { oneOf } = item;
   if (oneOf.length <= index)

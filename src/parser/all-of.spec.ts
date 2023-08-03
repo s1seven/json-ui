@@ -1,9 +1,9 @@
 import { JSONSchema7 } from "json-schema";
-import { resolveOneOf } from "./resolve-one-of";
+import { allOf } from "./all-of";
 
 test("it matches the snapshot", async () => {
-  const schema = (await import("../../fixtures/schema-with-one-of.json"))
+  const schema = (await import("../../fixtures/schema-with-all-of.json"))
     .default as unknown as JSONSchema7;
-  const result = resolveOneOf(schema, 1);
+  const result = allOf(schema);
   expect(result).toMatchSnapshot();
 });
