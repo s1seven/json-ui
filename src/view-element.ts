@@ -1,57 +1,48 @@
 import { LitElement, html, unsafeCSS } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { JSONSchema7 } from "json-schema";
-import { schema } from "./state";
-import { append } from "./utils/append";
-import { rollingSelect as rollingSelector } from "./utils/mutable";
-import { PROPERTIES_KEY } from "./constants";
+import { path } from "./state";
+import { dispatchChange } from "./utils/dispatch-change";
 
 @customElement("view-element")
 export class ViewElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
-  @property({ type: String })
-  set path(newPath: string) {
-    this._path = newPath;
-    this.rollingSchemaSelector.roll(newPath);
-    console.log(newPath);
-  }
-  private _path = "";
-
-  private rollingSchemaSelector = rollingSelector(
-    schema,
-    (subSchema) => (this.schema = subSchema)
-  );
-
-  @state()
+  @property({ type: Object })
   schema?: JSONSchema7;
 
+  value = {};
+
   render() {
-    switch (this.schema?.type) {
-      case "object":
-        return this.renderObject();
-      default:
-        return html`<div>Unknown type ${this.schema?.type}</div>`;
-    }
+    return html`<div class="flex flex-col gap-4">
+      ${this.renderHeader()}
+
+      <one-of-element
+        @change=${dispatchChange(this)}
+        .schema=${this.schema!}
+        .value=${this.value!}
+      ></one-of-element>
+      <button>NEXT</button>
+    </div>`;
   }
 
-  renderObject() {
-    const properties = Object.entries(
-      (this.schema?.[PROPERTIES_KEY] as unknown as JSONSchema7[]) ?? []
-    );
-    return html` <div>${this._path}</div>
-      <ul class="flex flex-col gap-4">
-        ${properties.map(
-          ([key]) =>
-            html`<li
-              @click=${() =>
-                (this.path = append(this._path, PROPERTIES_KEY, key))}
-              class="bg-slate-600 cursor-pointer active:bg-slate-800 rounded-md p-4 text-white"
-            >
-              ${key}
-            </li>`
-        )}
-      </ul>`;
+  // - back button
+  // - Step 1 of 28
+  private renderHeader() {
+    const pathParts = path.get()?.split(".");
+    return html`<div>
+      <button
+        class="text-blue-500"
+        @click=${() => {
+          pathParts?.pop();
+          path.set(pathParts?.join("."));
+        }}
+      >
+        Back
+      </button>
+      <strong>HEADER</strong>
+      <span>PATH:${path.get()}</span>
+    </div>`;
   }
 }

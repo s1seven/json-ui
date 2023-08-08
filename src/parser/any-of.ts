@@ -14,10 +14,7 @@ export const getAnyOfVal = (
   return anyOf as JSONSchema7[];
 };
 
-export const anyOf = (
-  item: JSONSchema7Value,
-  indices: number[]
-): JSONSchema7Value => {
+export const anyOf = (item: JSONSchema7, indices: number[]): JSONSchema7 => {
   const anyOfVal = getAnyOfVal(item);
   if (!anyOfVal) return item;
   return deepMerge<ExtractObjects<JSONSchema7Value>>(
@@ -50,7 +47,7 @@ export const anyOfOptions = (
     const indicesAfterToggle = isSelected
       ? selectedIndices.filter((i) => i !== idx)
       : [...selectedIndices, idx];
-    const schemaAfterToggle = anyOf(item, indicesAfterToggle);
+    const schemaAfterToggle = anyOf(item as JSONSchema7, indicesAfterToggle);
     set(clonedSchema, path, schemaAfterToggle);
     const hasTypeConflict =
       new Set(indicesAfterToggle.map((i) => anyOfVal[i]?.type).filter(Boolean))

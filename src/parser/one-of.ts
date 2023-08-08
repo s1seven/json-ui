@@ -13,7 +13,7 @@ export const getOneOfVal = (
   return oneOf as JSONSchema7[];
 };
 
-export const oneOf = (item: JSONSchema7Value, index: number) => {
+export const oneOf = (item: JSONSchema7, index: number): JSONSchema7 => {
   const oneOfVal = getOneOfVal(item);
   if (!oneOfVal) return item;
   if (oneOf.length <= index)
@@ -37,7 +37,7 @@ export interface OneOfOption {
 }
 
 export const oneOfOptions = (
-  schema: JSONSchema7,
+  schema: JSONSchema7Value,
   path: string,
   selectedIndex: number
 ): undefined | OneOfOption[] => {
