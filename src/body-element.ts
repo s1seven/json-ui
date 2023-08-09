@@ -7,7 +7,7 @@ import { inferType } from "./parser/infer";
 import { JSONSchema7Value } from "./utils/helper-types";
 import { ChangeEventDetails, dispatchChange } from "./utils/dispatch-change";
 import { AnyOfOption } from "./parser/any-of";
-import { humanizeKey } from "./utils/humanize";
+import { humanizeKey, humanizeValue } from "./utils/humanize";
 
 /**
  * The body represents the main content of the JSON UI.
@@ -55,16 +55,47 @@ export class BodyElement extends LitElement {
       <div class="flex flex-col gap-8 items-start">
         ${properties.map(([key, prop]) => {
           const type = inferType(prop);
+          const value = this.value?.[key] ?? "";
 
           if (type === "string")
             return html`<label class="flex flex-col gap-2">
               ${renderLabel(key, required.includes(key))}
               <string-element
                 @change=${dispatchChange(this, key)}
-                .value=${this.value?.[key] ?? ""}
+                .value=${value}
                 .schema=${prop}
               ></string-element>
             </label>`;
+
+          if (value) {
+            return html`<label class="inline-flex flex-col gap-2"
+              >${renderLabel(key, required.includes(key))}
+              <div
+                @click=${() => this.navigate(key)}
+                class="cursor-pointer font-medium text-lg select-none active:bg-stone-200 text-slate-900 rounded-sm px-2 py-1 ring-slate-900 ring-2 bg-stone-100 flex gap-2 items-center justify-between"
+              >
+                <div class="flex flex-col">
+                  ${humanizeValue(value).map(
+                    ([title, preview]) =>
+                      html`<div class="flex gap-2">
+                        <strong>${title}</strong
+                        ><span class="text-slate-500">${preview}</span>
+                      </div>`
+                  )}
+                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-8 h-8"
+                  viewBox="0 -960 960 960"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z"
+                  />
+                </svg>
+              </div>
+            </label>`;
+          }
 
           return html`<label class="inline-flex flex-col gap-2"
             >${renderLabel(key, required.includes(key))}
