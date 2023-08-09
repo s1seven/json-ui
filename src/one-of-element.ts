@@ -4,6 +4,11 @@ import styles from "./index.css?inline";
 import { oneOfOptions } from "./parser/one-of";
 import { JSONSchema7 } from "json-schema";
 
+
+// Certificate › Parties › Manufacturer
+// 1. make sure select does not disappear
+// 2. infer selection from value
+
 @customElement("one-of-element")
 export class OneOfElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
@@ -23,7 +28,7 @@ export class OneOfElement extends LitElement {
   }
 
   render() {
-    const options = oneOfOptions(this.schema, "", -1);
+    const options = oneOfOptions(this.schema, "", this.value);
     return options
       ? html`
           <select @change=${(ev: any) => this.handleChange(~~ev.target.value)}>
