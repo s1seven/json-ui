@@ -38,6 +38,12 @@ export class JsonUiElement extends LitElement {
     RefSchemaUrl: "loremmmm",
   };
 
+  private setPath(path: string) {
+    this.anyOfIndices = void 0;
+    this.oneOfIndex = void 0;
+    this.path = path;
+  }
+
   private resolveSchema(): JSONSchema7 | undefined {
     if (!this.schema) return void 0;
     let schema = allOf(resolveRefs(this.schema));
@@ -84,7 +90,7 @@ export class JsonUiElement extends LitElement {
         <body-element
           @change=${this.handleChange}
           @navigate=${(ev: CustomEvent<string>) =>
-            (this.path = joinPaths(this.path, ev.detail))}
+            this.setPath(joinPaths(this.path, ev.detail))}
           .schema=${resolvedSchema}
           .value=${resolvedValue}
         ></body-element>
@@ -106,7 +112,7 @@ export class JsonUiElement extends LitElement {
             class="text-blue-500"
             @click=${() => {
               pathParts?.pop();
-              this.path = pathParts?.join(PATH_SEPARATOR);
+              this.setPath(pathParts?.join(PATH_SEPARATOR));
             }}
           >
             Back
@@ -117,9 +123,9 @@ export class JsonUiElement extends LitElement {
             (part, i, arr) =>
               html`<a
                   @click=${() =>
-                    (this.path = pathParts
-                      .filter((_, k) => k <= i)
-                      .join(PATH_SEPARATOR))}
+                    this.setPath(
+                      pathParts.filter((_, k) => k <= i).join(PATH_SEPARATOR)
+                    )}
                   >${part}</a
                 >${i < arr.length - 1 ? html`›` : nothing}`
           )}
