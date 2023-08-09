@@ -1,35 +1,30 @@
 import { LitElement, html, nothing, unsafeCSS } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
-import { oneOf, oneOfOptions } from "./parser/one-of";
+import { oneOfOptions } from "./parser/one-of";
 import { JSONSchema7 } from "json-schema";
-import { dispatchChange } from "./utils/dispatch-change";
 
 @customElement("one-of-element")
 export class OneOfElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
   @property({ type: Object })
-  set schema(schema: JSONSchema7) {
-    this.resolvedSchema = this._schema = schema;
-  }
-
-  private _schema?: JSONSchema7;
+  schema!: JSONSchema7;
 
   @property()
   value?: any;
 
-  @state()
-  resolvedSchema?: JSONSchema7;
-
   private handleChange(index: number) {
-    this.resolvedSchema =
-      index === -1 ? this._schema : oneOf(this._schema as JSONSchema7, index);
+    this.dispatchEvent(
+      new CustomEvent("change", {
+        detail: index,
+      })
+    );
   }
 
   render() {
-    const options = oneOfOptions(this._schema, "", -1);
-    const oneOf = options
+    const options = oneOfOptions(this.schema, "", -1);
+    return options
       ? html`
           <select @change=${(ev: any) => this.handleChange(~~ev.target.value)}>
             <option value="-1">DEFAULT</option>
@@ -46,14 +41,5 @@ export class OneOfElement extends LitElement {
           <hr />
         `
       : nothing;
-
-    return html`<div class="flex flex-col gap-4">
-      ${oneOf}
-      <any-of-element
-        @change=${dispatchChange(this)}
-        .schema=${this.resolvedSchema!}
-        .value=${this.value!}
-      ></any-of-element>
-    </div>`;
   }
 }

@@ -1,44 +1,35 @@
 import { LitElement, html, nothing, unsafeCSS } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { JSONSchema7 } from "json-schema";
-import { anyOf, anyOfOptions } from "./parser/any-of";
-import { dispatchChange } from "./utils/dispatch-change";
+import { anyOfOptions } from "./parser/any-of";
 
 @customElement("any-of-element")
 export class AnyOfElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
   @property({ type: Object })
-  set schema(schema: JSONSchema7) {
-    this.resolvedSchema = this._schema = schema;
-  }
+  schema!: JSONSchema7;
 
-  private _schema?: JSONSchema7;
-
-  @property()
-  value?: any;
-
-  @state()
-  resolvedSchema?: JSONSchema7;
-
-  @state()
-  indices: number[] = [];
+  @property({ type: Array })
+  value?: number[];
 
   private handleChange(indices: number[]) {
-    this.indices = indices;
-    this.resolvedSchema = indices.length
-      ? anyOf(this._schema as JSONSchema7, indices)
-      : this._schema;
-    console.log(indices, { sc: this.resolvedSchema });
+    this.dispatchEvent(
+      new CustomEvent("change", {
+        detail: indices,
+      })
+    );
   }
 
   render() {
-    const options = anyOfOptions(this._schema!, "", this.indices);
-    const anyOf = options
+    const options = anyOfOptions(this.schema!, "", this.value ?? [])?.map(
+      (option) => option.title
+    );
+    return options
       ? html`
           <checkbox-group-element
-            .value=${this.indices}
+            .value=${this.value ?? []}
             @change=${(ev: CustomEvent<number[]>) =>
               this.handleChange(ev.detail)}
             .options=${options}
@@ -46,29 +37,5 @@ export class AnyOfElement extends LitElement {
           <hr />
         `
       : nothing;
-
-    return html`<div class="flex flex-col gap-4">
-      ${anyOf}
-      <body-element
-        @change=${dispatchChange(this)}
-        .schema=${this.resolvedSchema!}
-        .value=${this.value!}
-      ></body-element>
-    </div>`;
   }
 }
-
-// <!-- <select
-// @change=${(ev: any) => this.handleChange([~~ev.target.value])}
-// >
-// <option value="-1">DEFAULT</option>
-// ${options?.map(
-//   (option, i) =>
-//     html` <option
-//       ?selected=${option.isSelected}
-//       .value=${i.toString()}
-//     >
-//       ${option.title}
-//     </option>`
-// )}
-// </select> -->

@@ -9,6 +9,12 @@ export const joinPaths = (...paths: (string | undefined)[]) =>
     .replace(/^\.*|\.*$/g, "")
     .replace(/\.{2,}/g, ".");
 
+export const popPath = (path: string): string =>
+  path.split(PATH_SEPARATOR).slice(0, -1).join(PATH_SEPARATOR);
+
+export const lastPathSegment = (path: string): string =>
+  path.split(PATH_SEPARATOR).slice(-1)[0];
+
 export const navigate = (schema: JSONSchema7, path: string): JSONSchema7 => {
   const parts = path.split(".");
   return parts.reduce((acc, key) => {

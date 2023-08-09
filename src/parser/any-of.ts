@@ -35,7 +35,7 @@ export interface AnyOfOption {
 export const anyOfOptions = (
   schema: JSONSchema7,
   path: string,
-  selectedIndices: number[]
+  selectedIndices: number[] = []
 ): undefined | AnyOfOption[] => {
   const item = path ? (get(schema, path) as JSONSchema7Value) : schema;
   const anyOfVal = getAnyOfVal(item);

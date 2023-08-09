@@ -4,6 +4,14 @@ A dynamic user interface for creating JSON documents according to a JSON schema.
 
 ![JSON UI Screenshot](./screenshot.png)
 
+
+## NOT SUPPORTED
+
+- multiple types
+- nested oneOf, anyOf, allOf (think of inferring values)
+- null type
+- true | false type
+
 ## JSON UI decision tree
 ```
 .

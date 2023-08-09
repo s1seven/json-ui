@@ -1,13 +1,13 @@
 import { joinPaths } from "./path";
 
-export interface ChangeEventDetails {
+export interface ChangeEventDetails<T = unknown> {
   path: string;
-  value: unknown;
+  value: T;
 }
 
 export const dispatchChange =
   (target: EventTarget, key = "") =>
-  (ev: CustomEvent<ChangeEventDetails>) => {
+  (ev: CustomEvent<ChangeEventDetails> | { detail: ChangeEventDetails }) => {
     target.dispatchEvent(
       new CustomEvent<ChangeEventDetails>("change", {
         detail: {

@@ -8,10 +8,11 @@ import {
   isUndefined,
 } from "lodash";
 import { JSONSchema7Value } from "../utils/helper-types";
+import { lastPathSegment } from "../utils/path";
 
 export const inferType = (
   schema: JSONSchema7 | JSONSchema7Value
-): JSONSchema7TypeName => {
+): JSONSchema7TypeName | undefined => {
   if (isBoolean(schema)) return "boolean";
   if (isString(schema)) return "string";
   if (isNumber(schema)) return "number";
@@ -22,5 +23,11 @@ export const inferType = (
   if (schema.type) return schema.type as JSONSchema7TypeName;
   if (schema.properties) return "object";
   if (schema.items) return "array";
-  throw new Error(`Could not infer type: ${JSON.stringify(schema)}`);
+  return void 0;
 };
+
+export const inferTitle = (schema: JSONSchema7, path: string): string =>
+  schema.title ?? lastPathSegment(path);
+
+export const inferDescription = (schema: JSONSchema7): string =>
+  schema.description ?? "";
