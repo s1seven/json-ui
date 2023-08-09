@@ -4,12 +4,12 @@ import styles from "./index.css?inline";
 import { resolveRefs } from "./parser/resolve-refs";
 import { allOf } from "./parser/all-of";
 import { JSONSchema7 } from "json-schema";
-import { joinPaths, navigate } from "./utils/path";
+import { firstPathSegment, joinPaths, navigate } from "./utils/path";
 import { inferOneOfOption, oneOf } from "./parser/one-of";
 import { anyOf, inferAnyOfOptions } from "./parser/any-of";
-import { get, isEmpty, isUndefined, set } from "lodash";
-import { inferDescription, inferTitle } from "./parser/infer";
-import { PATH_SEPARATOR } from "./constants";
+import { get, isEmpty, isNull, isUndefined, set } from "lodash";
+import { inferDescription, inferTitle, inferType } from "./parser/infer";
+import { DEFAULT_VALUES, PATH_SEPARATOR } from "./constants";
 import { ChangeEventDetails } from "./utils/dispatch-change";
 import { humanizeKey } from "./utils/humanize";
 
@@ -56,6 +56,7 @@ export class JsonUiElement extends LitElement {
   ): void {
     // Always resolve the value because nested values may have changed.
     this.resolvedValue = this.path ? get(this.value, this.path) : this.value;
+    this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
 
     this.resolvedSchemas ??= {} as any;
 
@@ -86,6 +87,8 @@ export class JsonUiElement extends LitElement {
     }
 
     if (updateLevel <= 1) {
+      this.dispatchEvent(new CustomEvent("navigate", { detail: this.path }));
+
       this.resolvedSchemas.navigated = navigate(
         this.resolvedSchemas.resolvedAllOf,
         this.path
@@ -119,6 +122,15 @@ export class JsonUiElement extends LitElement {
 
   private handleChange(ev: CustomEvent<any>) {
     const resolvedPath = joinPaths(this.path, ev.detail.path);
+    const expectedType = inferType(this.schema);
+    if (expectedType === void 0)
+      throw new Error("Could not determine base schema type.");
+    if (
+      typeof this.value !== expectedType ||
+      isNull(this.value) ||
+      isUndefined(this.value)
+    )
+      this.value = DEFAULT_VALUES[expectedType];
     set(this.value, resolvedPath, ev.detail.value);
     this.requestUpdate();
   }

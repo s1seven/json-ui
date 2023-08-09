@@ -12,6 +12,9 @@ export const joinPaths = (...paths: (string | undefined)[]) =>
 export const popPath = (path: string): string =>
   path.split(PATH_SEPARATOR).slice(0, -1).join(PATH_SEPARATOR);
 
+export const firstPathSegment = (path: string): string =>
+  path.split(PATH_SEPARATOR)[0];
+
 export const lastPathSegment = (path: string): string =>
   path.split(PATH_SEPARATOR).slice(-1)[0];
 
