@@ -5,7 +5,7 @@ import isObject from "lodash/isObject";
 import type { ExtractObjects, JSONSchema7Value } from "../utils/helper-types";
 import { deepMerge } from "../utils/deep-merge";
 
-export const allOf = <T extends JSONSchema7Value>(item: T): T =>
+export const allOf = <T extends JSONSchema7Value | undefined>(item: T): T =>
   !isObject(item)
     ? item
     : isArray(item)

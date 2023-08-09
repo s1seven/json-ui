@@ -6,7 +6,7 @@ import { JSONSchema7 } from "json-schema";
 
 
 // Certificate › Parties › Manufacturer
-// 1. make sure select does not disappear
+// x make sure select does not disappear
 // 2. infer selection from value
 
 @customElement("one-of-element")

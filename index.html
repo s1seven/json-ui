@@ -15,7 +15,10 @@
     <script>
       window.addEventListener("load", async () => {
         const jsonUIElement = document.querySelector("json-ui-element");
-        const schema = await (await fetch("./fixtures/coa-schema.json")).json();
+        const schema = await (
+          await fetch("./fixtures/schema-with-one-of.json")
+        ).json();
+        // const schema = await (await fetch("./fixtures/coa-schema.json")).json();
         jsonUIElement.schema = schema;
       });
     </script>

@@ -7,11 +7,12 @@ import { JSONSchema7 } from "json-schema";
 import { joinPaths, navigate } from "./utils/path";
 import { oneOf } from "./parser/one-of";
 import { anyOf } from "./parser/any-of";
-import { get, set } from "lodash";
+import { concat, flow, get, isArray, isEmpty, last, set } from "lodash";
 import { inferDescription, inferTitle } from "./parser/infer";
 import { PATH_SEPARATOR } from "./constants";
 import { ChangeEventDetails } from "./utils/dispatch-change";
 import { humanizeKey } from "./utils/humanize";
+import { appendArr } from "./utils/append-arr";
 
 @customElement("json-ui-element")
 export class JsonUiElement extends LitElement {
@@ -44,14 +45,39 @@ export class JsonUiElement extends LitElement {
     this.path = path;
   }
 
-  private resolveSchema(): JSONSchema7 | undefined {
-    if (!this.schema) return void 0;
-    let schema = allOf(resolveRefs(this.schema));
-    if (this.path) schema = navigate(schema, this.path);
-    if (this.oneOfIndex !== undefined) schema = oneOf(schema, this.oneOfIndex);
-    if (this.anyOfIndices && this.anyOfIndices.length > 0)
-      schema = anyOf(schema, this.anyOfIndices);
-    return schema;
+  private resolveSchema<
+    T = [
+      original: JSONSchema7,
+      resolvedRefs?: JSONSchema7,
+      resolvedAllOf?: JSONSchema7,
+      navigated?: JSONSchema7,
+      resolvedOneOf?: JSONSchema7,
+      resolvedAnyOf?: JSONSchema7
+    ]
+  >(): Required<T> {
+    return flow([
+      (schemas) => concat(schemas, resolveRefs(last(schemas)!)),
+      (schemas) => concat(schemas, allOf(last(schemas)!)),
+      (schemas) =>
+        concat(
+          schemas,
+          this.path ? navigate(last(schemas)!, this.path) : last(schemas)!
+        ),
+      (schemas) =>
+        concat(
+          schemas,
+          this.oneOfIndex !== undefined
+            ? oneOf(last(schemas)!, this.oneOfIndex)
+            : last(schemas)!
+        ),
+      (schemas) =>
+        concat(
+          schemas,
+          !isEmpty(this.anyOfIndices)
+            ? anyOf(last(schemas)!, this.anyOfIndices!)
+            : last(schemas)!
+        ),
+    ])([this.schema]);
   }
 
   private resolveValue(): any {
@@ -66,24 +92,24 @@ export class JsonUiElement extends LitElement {
   }
 
   render() {
-    const resolvedSchema = this.resolveSchema();
-    if (!resolvedSchema) return nothing;
+    if (!this.schema) return nothing;
+    const schemas = this.resolveSchema();
     const resolvedValue = this.resolveValue();
 
     return html`
       <div class="grid grid-cols-1 gap-8">
-        ${this.renderHeader(resolvedSchema)}
-        ${resolvedSchema.oneOf &&
+        ${this.renderHeader(schemas.at(-1)!)}
+        ${schemas[3].oneOf &&
         html`<one-of-element
           @change=${(ev: CustomEvent<number>) => (this.oneOfIndex = ev.detail)}
-          .schema=${resolvedSchema}
+          .schema=${schemas[3]}
           .value=${this.oneOfIndex}
         ></one-of-element>`}
-        ${resolvedSchema.anyOf &&
+        ${schemas[4].anyOf &&
         html`<any-of-element
           @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
             (this.anyOfIndices = ev.detail.value)}
-          .schema=${resolvedSchema}
+          .schema=${schemas[4]}
           .value=${this.anyOfIndices}
         ></any-of-element>`}
 
@@ -91,7 +117,7 @@ export class JsonUiElement extends LitElement {
           @change=${this.handleChange}
           @navigate=${(ev: CustomEvent<string>) =>
             this.setPath(joinPaths(this.path, ev.detail))}
-          .schema=${resolvedSchema}
+          .schema=${schemas.at(-1)!}
           .value=${resolvedValue}
         ></body-element>
 
