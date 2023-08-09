@@ -10,6 +10,7 @@
     <script type="module" src="/src/any-of-element.ts"></script>
     <script type="module" src="/src/body-element.ts"></script>
     <script type="module" src="/src/ui/checkbox-group-element.ts"></script>
+    <script type="module" src="/src/ui/checkbox-element.ts"></script>
     <script type="module" src="/src/ui/string-element.ts"></script>
     <script type="module" src="/src/ui/single-dropdown-element.ts"></script>
     <script type="module" src="/src/ui/number-element.ts"></script>
@@ -20,9 +21,18 @@
         const el = document.createElement("json-ui-element");
 
         Object.assign(el, {
-          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          schema: await (
+            await fetch("./fixtures/schema-with-nested-one-of.json")
+          ).json(),
           path: location.hash.replaceAll("/", ".").slice(1),
-          value: JSON.parse(localStorage.getItem("JSON_UI_VALUE")),
+          value: {
+            person: {
+              student: {
+                partTime: true,
+              },
+            },
+          },
+          // value: JSON.parse(localStorage.getItem("JSON_UI_VALUE")),
         });
 
         el.addEventListener("change", (e) => {

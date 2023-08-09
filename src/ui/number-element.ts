@@ -11,7 +11,7 @@ import { JSONSchema7 } from "json-schema";
 import IMask from "imask";
 import Ajv from "ajv";
 import { ajv } from "../parser/ajv";
-import { isString } from "lodash";
+import { isNumber, isString } from "lodash";
 import { DEFAULT_VALUES } from "../constants";
 
 /**
@@ -64,7 +64,7 @@ export class NumberElement extends LitElement {
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
-    if (_changedProperties.has("value") && !isString(this.value)) {
+    if (_changedProperties.has("value") && !isNumber(this.value)) {
       this.value = DEFAULT_VALUES["number"] as number;
     }
   }

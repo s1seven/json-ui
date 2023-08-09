@@ -4,7 +4,7 @@ import styles from "./index.css?inline";
 import { resolveRefs } from "./parser/resolve-refs";
 import { allOf } from "./parser/all-of";
 import { JSONSchema7 } from "json-schema";
-import { joinPaths, navigate } from "./utils/path";
+import { joinPaths, navigateSchema } from "./utils/path";
 import { inferOneOfOption, oneOf } from "./parser/one-of";
 import { anyOf, inferAnyOfOptions } from "./parser/any-of";
 import { get, isEmpty, isNull, isUndefined, set } from "lodash";
@@ -82,7 +82,9 @@ export class JsonUiElement extends LitElement {
     }
 
     console.debug(
-      `🚀 [DEBUG] Performing a level ${updateLevel} schema update.`
+      `${
+        ["🔴", "🟠", "🟡", "🟢"][updateLevel]
+      } [DEBUG] Performing a level ${updateLevel} schema update.`
     );
 
     if (updateLevel === 0) {
@@ -97,9 +99,10 @@ export class JsonUiElement extends LitElement {
     if (updateLevel <= 1) {
       this.dispatchEvent(new CustomEvent("navigate", { detail: this.path }));
 
-      const navigatedSchema = navigate(
+      const navigatedSchema = navigateSchema(
         this.resolvedSchemas.resolvedAllOf,
-        this.path
+        this.path,
+        this.value
       );
 
       if (isUndefined(navigatedSchema)) {
@@ -123,7 +126,6 @@ export class JsonUiElement extends LitElement {
 
       this.anyOfIndices = inferAnyOfOptions(
         this.resolvedSchemas.resolvedOneOf,
-        this.path,
         this.resolvedValue
       );
     }
@@ -151,9 +153,8 @@ export class JsonUiElement extends LitElement {
   }
 
   render() {
-    console.log("RENDER", this.schema);
-    const { resolvedAnyOf, resolvedAllOf, navigated, resolvedOneOf } =
-      this.resolvedSchemas;
+    console.debug(`🧠 [DEBUG] Rendering JSON UI.`);
+    const { resolvedAnyOf, navigated, resolvedOneOf } = this.resolvedSchemas;
 
     return html`
       <div class="grid grid-cols-1 gap-8">
@@ -168,8 +169,7 @@ export class JsonUiElement extends LitElement {
         html`<any-of-element
           @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
             (this.anyOfIndices = ev.detail.value)}
-          .schema=${resolvedAllOf}
-          .path=${this.path}
+          .schema=${navigated}
           .value=${this.anyOfIndices}
         ></any-of-element>`}
 
@@ -227,9 +227,8 @@ export class JsonUiElement extends LitElement {
 
   private renderErrors() {
     const errors = this.ajvValidateFn?.errors ?? [];
-    console.log(errors);
     return html`
-      <div class="flex flex-col p-8 ring-2 ring-red-500 gap-4">
+      <div class="hidden flex flex-col p-8 ring-2 ring-red-500 gap-4">
         ${errors.map(
           (e) =>
             html`<div class="text-red-500 flex flex-col">

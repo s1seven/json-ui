@@ -32,23 +32,18 @@ export const oneOf = (item: JSONSchema7, index: number): JSONSchema7 => {
   );
 };
 
-export const oneOfOptions = (schema: JSONSchema7): string[] => {
-  const oneOfVal = getOneOfProp(schema);
-  if (!oneOfVal) return [];
-  return oneOfVal.map((val, idx) => val.title ?? `Option ${idx}`);
-};
+export const oneOfOptions = (schema: JSONSchema7) =>
+  (getOneOfProp(schema) ?? []).map((val, i) => val.title ?? `Option ${i}`);
 
 export const inferOneOfOption = (
   schema: JSONSchema7,
   value: unknown
 ): number => {
   const options = oneOfOptions(schema);
-  console.log(options, value);
   return options.findIndex((_, i) => {
     const a = oneOf(schema, i);
     const b = ajv.compile(a);
     const c = b(value);
-    console.log({ a, b, c, errors: b.errors });
     return c;
   });
 };

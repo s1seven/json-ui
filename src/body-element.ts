@@ -16,7 +16,7 @@ import { humanizeKey, humanizeValue } from "./utils/humanize";
 import { choose } from "lit/directives/choose.js";
 import { when } from "lit/directives/when.js";
 import { isUndefined } from "lodash";
-import { navigate } from "./utils/path";
+import { navigateSchema } from "./utils/path";
 
 /**
  * The body represents the main content of the JSON UI.
@@ -54,6 +54,7 @@ export class BodyElement extends LitElement {
           ["string", () => this.renderPrimitive("string")],
           ["number", () => this.renderPrimitive("string")],
           ["enum", () => this.renderPrimitive("string")],
+          ["boolean", () => this.renderPrimitive("boolean")],
         ],
         () => html`Unknown type <strong>${type}</strong>.`
       )}
@@ -69,12 +70,12 @@ export class BodyElement extends LitElement {
   }
 
   private renderPrimitive(
-    type: "string" | "number" | "enum",
+    type: "string" | "number" | "enum" | "boolean",
     key?: string | number,
     skipHeader = false
   ) {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
-    const schema = navigate(this.schema!, key);
+    const schema = navigateSchema(this.schema!, key);
     return html`<label class="flex flex-col gap-2 w-full">
       ${when(!skipHeader && key, () =>
         renderLabel(String(key), this.required.includes(String(key)))
@@ -109,6 +110,14 @@ export class BodyElement extends LitElement {
             ></single-dropdown-element>`;
           },
         ],
+        [
+          "boolean",
+          () => html`<checkbox-element
+            @change=${dispatchChange(this, String(key ?? ""))}
+            .value=${value}
+            .label=${humanizeKey(String(key))}
+          ></checkbox-element>`,
+        ],
       ])}
     </label>`;
   }
@@ -129,8 +138,9 @@ export class BodyElement extends LitElement {
               ["string", () => this.renderPrimitive("string", key)],
               ["number", () => this.renderPrimitive("number", key)],
               ["enum", () => this.renderPrimitive("enum", key)],
+              ["boolean", () => this.renderPrimitive("boolean", key, true)],
             ],
-            () => html`<label class="inline-flex flex-col gap-2"
+            () => html`<label class="w-full inline-flex flex-col gap-2"
               >${renderLabel(key, this.required.includes(key))}
               ${this.renderValuePreview(key, value)}
             </label>`

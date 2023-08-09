@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "properties": {
+    "person": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "age": {
+                  "type": "number"
+                }
+              },
+              "required": ["address"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "hobbies": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "hobbyName": {
+                            "type": "string"
+                          },
+                          "duration": {
+                            "type": "number"
+                          }
+                        },
+                        "required": ["hobbyName", "duration"]
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": ["hobbies"]
+            }
+          ]
+        }
+      },
+      "required": ["name", "details"]
+    }
+  }
+}
