@@ -1,9 +1,10 @@
-import { get, isArray, isBoolean, isObject, omit } from "lodash";
+import { isArray, isBoolean, isObject, omit } from "lodash";
 import { ExtractObjects, JSONSchema7Value } from "../utils/helper-types";
 import { deepMerge } from "../utils/deep-merge";
 import { JSONSchema7 } from "json-schema";
+import { ajv } from "./ajv";
 
-export const getOneOfVal = (
+export const getOneOfProp = (
   item: JSONSchema7Value
 ): JSONSchema7[] | undefined => {
   if (!isObject(item) || isArray(item) || !isArray(item.oneOf)) return void 0;
@@ -14,11 +15,11 @@ export const getOneOfVal = (
 };
 
 export const oneOf = (item: JSONSchema7, index: number): JSONSchema7 => {
-  const oneOfVal = getOneOfVal(item);
+  const oneOfVal = getOneOfProp(item);
   if (!oneOfVal) return item;
-  if (oneOf.length <= index)
+  if (oneOfVal.length <= index)
     throw new Error(
-      `Index ${index} out of bounds for oneOf array of length ${oneOf.length}`
+      `Index ${index} out of bounds for oneOf array of length ${oneOfVal.length}`
     );
   if (!isObject(oneOfVal[index]))
     throw new Error("oneOf item is not an object");
@@ -31,21 +32,16 @@ export const oneOf = (item: JSONSchema7, index: number): JSONSchema7 => {
   );
 };
 
-export interface OneOfOption {
-  title: string;
-  isSelected: boolean;
-}
+export const oneOfOptions = (schema: JSONSchema7): string[] => {
+  const oneOfVal = getOneOfProp(schema);
+  if (!oneOfVal) return [];
+  return oneOfVal.map((val, idx) => val.title ?? `Option ${idx}`);
+};
 
-export const oneOfOptions = (
-  schema: JSONSchema7Value,
-  path: string,
-  selectedIndex: number
-): undefined | OneOfOption[] => {
-  const item = path ? (get(schema, path) as JSONSchema7Value) : schema;
-  const oneOfVal = getOneOfVal(item);
-  if (!oneOfVal) return void 0;
-  return oneOfVal.map((val, idx) => ({
-    title: val.title ?? `Option ${idx}`,
-    isSelected: selectedIndex === idx,
-  }));
+export const inferOneOfOption = (
+  schema: JSONSchema7,
+  value: unknown
+): number => {
+  const options = oneOfOptions(schema);
+  return options.findIndex((_, i) => ajv.compile(oneOf(schema, i))(value));
 };

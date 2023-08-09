@@ -15,17 +15,53 @@
     <script>
       window.addEventListener("load", async () => {
         const jsonUIElement = document.querySelector("json-ui-element");
-        const schema = await (
-          await fetch("./fixtures/schema-with-one-of.json")
-        ).json();
+        const el = document.createElement("json-ui-element");
+
+        // await fetch("./fixtures/schema-with-one-of.json")
+        // await fetch("./fixtures/coa-schema.json")
         // const schema = await (await fetch("./fixtures/coa-schema.json")).json();
-        jsonUIElement.schema = schema;
+
+        // one of
+        // Object.assign(el, {
+        //   schema: await (
+        //     await fetch("./fixtures/schema-with-one-of.json")
+        //   ).json(),
+        //   value: {
+        //     school: "University of California, Berkeley",
+        //     company: "Google",
+        //     employees: 10_000,
+        //   },
+        // });
+
+        // any of
+        // Object.assign(el, {
+        //   schema: await (
+        //     await fetch("./fixtures/schema-with-any-of.json")
+        //   ).json(),
+        //   value: {
+        //     id: 'asd',
+        //     name: 'Chris',
+        //     age: 44,
+        //   },
+        // });
+
+        // coa
+        Object.assign(el, {
+          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          value: {
+            RefSchemaUrl: "https://lorem-ipsum.com",
+          },
+        });
+
+        el.addEventlistener("change", (e) => {
+          console.log("change", e.detail);
+        });
+
+        document.querySelector("#host").appendChild(el);
       });
     </script>
   </head>
   <body>
-    <div class="mx-auto my-16 max-w-xl p-4">
-      <json-ui-element></json-ui-element>
-    </div>
+    <div id="host" class="mx-auto my-16 max-w-xl p-4"></div>
   </body>
 </html>

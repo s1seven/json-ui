@@ -3,6 +3,7 @@ import { deepMerge } from "../utils/deep-merge";
 import { JSONSchema7Value, ExtractObjects } from "../utils/helper-types";
 import { JSONSchema7 } from "json-schema";
 import Ajv from "ajv";
+import { ajv, ajvFactory } from "./ajv";
 
 export const getAnyOfVal = (
   item: JSONSchema7Value
@@ -29,17 +30,15 @@ export const anyOf = (item: JSONSchema7, indices: number[]): JSONSchema7 => {
 export interface AnyOfOption {
   title: string;
   isIllogicalAfterToggle: boolean;
-  isSelected: boolean;
 }
 
 export const anyOfOptions = (
   schema: JSONSchema7,
   path: string,
   selectedIndices: number[] = []
-): undefined | AnyOfOption[] => {
-  const item = path ? (get(schema, path) as JSONSchema7Value) : schema;
-  const anyOfVal = getAnyOfVal(item);
-  if (!anyOfVal) return void 0;
+): AnyOfOption[] => {
+  const anyOfVal = getAnyOfVal(schema);
+  if (!anyOfVal) return [];
   const clonedSchema = structuredClone(schema);
   const ajv = new Ajv();
   return anyOfVal.map((val, idx) => {
@@ -47,17 +46,31 @@ export const anyOfOptions = (
     const indicesAfterToggle = isSelected
       ? selectedIndices.filter((i) => i !== idx)
       : [...selectedIndices, idx];
-    const schemaAfterToggle = anyOf(item as JSONSchema7, indicesAfterToggle);
+    const schemaAfterToggle = anyOf(schema as JSONSchema7, indicesAfterToggle);
     set(clonedSchema, path, schemaAfterToggle);
     const hasTypeConflict =
       new Set(indicesAfterToggle.map((i) => anyOfVal[i]?.type).filter(Boolean))
         .size > 1;
     const isIllogicalAfterToggle =
-      hasTypeConflict || !(ajv.validateSchema(clonedSchema) as boolean);
+      hasTypeConflict || !(ajv.validateSchema(schemaAfterToggle) as boolean);
     return {
       title: val.title ?? `Option ${idx}`,
       isIllogicalAfterToggle,
-      isSelected,
     };
   });
+};
+
+export const inferAnyOfOptions = (
+  schema: JSONSchema7,
+  path: string,
+  value: unknown
+): number[] => {
+  const options = anyOfOptions(schema, path, []);
+  return options?.reduce(
+    (selectedIndices, _, i) =>
+      ajvFactory().compile(anyOf(schema, [...selectedIndices, i]))(value)
+        ? [...selectedIndices, i]
+        : selectedIndices,
+    [] as number[]
+  );
 };

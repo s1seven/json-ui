@@ -24,5 +24,6 @@
       },
       "required": ["company", "employees"]
     }
-  ]
+  ],
+  "additionalProperties": false
 }

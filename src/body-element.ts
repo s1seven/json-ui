@@ -8,6 +8,9 @@ import { JSONSchema7Value } from "./utils/helper-types";
 import { ChangeEventDetails, dispatchChange } from "./utils/dispatch-change";
 import { AnyOfOption } from "./parser/any-of";
 import { humanizeKey, humanizeValue } from "./utils/humanize";
+import { choose } from "lit/directives/choose.js";
+import { when } from "lit/directives/when.js";
+import { isUndefined } from "lodash";
 
 /**
  * The body represents the main content of the JSON UI.
@@ -27,15 +30,16 @@ export class BodyElement extends LitElement {
   render() {
     if (!this.schema) return html`<div>no schema</div>`;
     const type = inferType(this.schema!);
-
-    switch (type) {
-      case "object":
-        return this.renderObject();
-      case "array":
-        return this.renderArray();
-      default:
-        return html`<div>Unknown type ${type}</div>`;
-    }
+    return html`
+      ${choose(
+        type,
+        [
+          ["object", () => this.renderObject()],
+          ["array", () => this.renderArray()],
+        ],
+        () => html`Unknown type ${type}`
+      )}
+    `;
   }
 
   private navigate(subPath: string) {
@@ -55,7 +59,7 @@ export class BodyElement extends LitElement {
       <div class="flex flex-col gap-8 items-start">
         ${properties.map(([key, prop]) => {
           const type = inferType(prop);
-          const value = this.value?.[key] ?? "";
+          const value = this.value?.[key];
 
           if (type === "string")
             return html`<label class="flex flex-col gap-2">
@@ -67,58 +71,59 @@ export class BodyElement extends LitElement {
               ></string-element>
             </label>`;
 
-          if (value) {
-            return html`<label class="inline-flex flex-col gap-2"
-              >${renderLabel(key, required.includes(key))}
-              <div
-                @click=${() => this.navigate(key)}
-                class="cursor-pointer font-medium text-lg select-none active:bg-stone-200 text-slate-900 rounded-sm px-2 py-1 ring-slate-900 ring-2 bg-stone-100 flex gap-2 items-center justify-between"
-              >
-                <div class="flex flex-col">
-                  ${humanizeValue(value).map(
-                    ([title, preview]) =>
-                      html`<div class="flex gap-2">
-                        <strong>${title}</strong
-                        ><span class="text-slate-500">${preview}</span>
-                      </div>`
-                  )}
-                </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-8 h-8"
-                  viewBox="0 -960 960 960"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z"
-                  />
-                </svg>
-              </div>
-            </label>`;
-          }
-
           return html`<label class="inline-flex flex-col gap-2"
             >${renderLabel(key, required.includes(key))}
-            <div
-              @click=${() => this.navigate(key)}
-              class="cursor-pointer font-medium text-lg select-none active:bg-slate-700 text-white rounded-sm px-2 py-1 ring-slate-900 ring-2 bg-slate-900 flex gap-2 items-center"
-            >
-              Declare ${key}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-8 h-8"
-                viewBox="0 -960 960 960"
-              >
-                <path
-                  fill="currentColor"
-                  d="m560-242-43-42 168-168H160v-60h525L516-681l43-42 241 241-240 240Z"
-                />
-              </svg>
-            </div>
+            ${this.renderValuePreview(key, value)}
           </label>`;
         })}
       </div>
     `;
+  }
+
+  private renderValuePreview(key: string, value: unknown) {
+    return when(
+      isUndefined(value),
+      () => html`<div
+        @click=${() => this.navigate(key)}
+        class="cursor-pointer font-medium text-lg select-none active:bg-slate-700 text-white rounded-sm px-2 py-1 ring-slate-900 ring-2 bg-slate-900 flex gap-2 items-center"
+      >
+        Declare ${key}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-8 h-8"
+          viewBox="0 -960 960 960"
+        >
+          <path
+            fill="currentColor"
+            d="m560-242-43-42 168-168H160v-60h525L516-681l43-42 241 241-240 240Z"
+          />
+        </svg>
+      </div>`,
+      () => html` <div
+        @click=${() => this.navigate(key)}
+        class="cursor-pointer font-medium text-lg select-none active:bg-stone-200 text-slate-900 rounded-sm px-2 py-1 ring-slate-900 ring-2 bg-stone-100 flex gap-2 items-center justify-between"
+      >
+        <div class="flex flex-col">
+          ${humanizeValue(value).map(
+            ([title, preview]) =>
+              html`<div class="flex gap-2">
+                <strong>${title}</strong
+                ><span class="text-slate-500">${preview}</span>
+              </div>`
+          )}
+        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-8 h-8"
+          viewBox="0 -960 960 960"
+        >
+          <path
+            fill="currentColor"
+            d="M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z"
+          />
+        </svg>
+      </div>`
+    );
   }
 
   private renderArray() {
@@ -147,10 +152,13 @@ export class BodyElement extends LitElement {
       `;
     }
 
+    // Regular arrays.
     return html`
       <ol class="mt-4 flex flex-col gap-4">
-        ${(this.value ?? []).map(
-          (_, i) => html`<li class="list-decimal ml-6 pl-4">VALL ${i}</li>`
+        ${((this.value as any[]) ?? []).map(
+          (value, i) => html`<li class="list-decimal ml-6 pl-4">
+            ${this.renderValuePreview(i.toString(), value)}
+          </li>`
         )}
         <li class="ml-6 pl-4 list-disc">
           <button

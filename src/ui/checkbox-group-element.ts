@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { LitElement, TemplateResult, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "../index.css?inline";
 import { ChangeEventDetails } from "../utils/dispatch-change";
@@ -12,7 +12,7 @@ export class CheckboxGroupElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
   @property({ type: Array })
-  readonly options: string[] = [];
+  readonly options: (string | TemplateResult) [] = [];
 
   @property({ type: Array })
   readonly value: number[] = [];

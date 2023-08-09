@@ -11,6 +11,9 @@ export class AnyOfElement extends LitElement {
   @property({ type: Object })
   schema!: JSONSchema7;
 
+  @property({ type: String })
+  path!: string;
+
   @property({ type: Array })
   value?: number[];
 
@@ -23,9 +26,11 @@ export class AnyOfElement extends LitElement {
   }
 
   render() {
-    const options = anyOfOptions(this.schema!, "", this.value ?? [])?.map(
-      (option) => option.title
-    );
+    const options = anyOfOptions(
+      this.schema!,
+      this.path!,
+      this.value ?? []
+    )?.map((option) => option.title);
     return options
       ? html`
           <checkbox-group-element
@@ -34,7 +39,6 @@ export class AnyOfElement extends LitElement {
               this.handleChange(ev.detail)}
             .options=${options}
           ></checkbox-group-element>
-          <hr />
         `
       : nothing;
   }

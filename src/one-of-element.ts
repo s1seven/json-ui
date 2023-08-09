@@ -4,7 +4,6 @@ import styles from "./index.css?inline";
 import { oneOfOptions } from "./parser/one-of";
 import { JSONSchema7 } from "json-schema";
 
-
 // Certificate › Parties › Manufacturer
 // x make sure select does not disappear
 // 2. infer selection from value
@@ -28,7 +27,7 @@ export class OneOfElement extends LitElement {
   }
 
   render() {
-    const options = oneOfOptions(this.schema, "", this.value);
+    const options = oneOfOptions(this.schema);
     return options
       ? html`
           <select @change=${(ev: any) => this.handleChange(~~ev.target.value)}>
@@ -36,14 +35,13 @@ export class OneOfElement extends LitElement {
             ${options?.map(
               (option, i) =>
                 html` <option
-                  ?selected=${option.isSelected}
+                  ?selected=${this.value === i}
                   .value=${i.toString()}
                 >
-                  ${option.title}
+                  ${option}
                 </option>`
             )}
           </select>
-          <hr />
         `
       : nothing;
   }

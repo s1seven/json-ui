@@ -1,6 +1,6 @@
 import { JSONSchema7 } from "json-schema";
-import { isArray, toInteger } from "lodash";
 import { PATH_SEPARATOR } from "../constants";
+import { inferType } from "../parser/infer";
 
 export const joinPaths = (...paths: (string | undefined)[]) =>
   paths
@@ -16,13 +16,15 @@ export const lastPathSegment = (path: string): string =>
   path.split(PATH_SEPARATOR).slice(-1)[0];
 
 export const navigate = (schema: JSONSchema7, path: string): JSONSchema7 => {
-  const parts = path.split(".");
+  const parts = path ? path.split(".") : [];
   return parts.reduce((acc, key) => {
-    if (acc.type === "object") {
+    const type = inferType(acc);
+
+    if (type === "object") {
       return acc.properties?.[key] as JSONSchema7;
     }
-    if (isArray(acc.items)) {
-      return acc.items[toInteger(key)] as JSONSchema7;
+    if (type === "array") {
+      return acc.items as JSONSchema7;
     }
     return acc as JSONSchema7;
   }, schema);
