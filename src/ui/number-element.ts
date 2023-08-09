@@ -76,7 +76,7 @@ export class NumberElement extends LitElement {
 
   private handleChange(ev: Event) {
     const target = ev.target as HTMLInputElement;
-    const value = target.value;
+    const value = target.valueAsNumber;
     this.dispatchEvent(
       new CustomEvent("change", {
         detail: { value },
@@ -105,9 +105,9 @@ export class NumberElement extends LitElement {
             ${this.icon}
           </div>
           <input
-            type="text"
+            type="number"
             @change=${this.handleChange}
-            .value=${this.value ?? ""}
+            .value=${this.value}
             class="px-3 py-2 focus:ring-0 bg-transparent border-none text-[0.8125rem] focus:outline-none w-full"
           />
         </div>

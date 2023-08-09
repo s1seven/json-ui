@@ -11,7 +11,9 @@ import { get, isEmpty, isNull, isUndefined, set } from "lodash";
 import { inferDescription, inferTitle, inferType } from "./parser/infer";
 import { ROOT_PATH, DEFAULT_VALUES, PATH_SEPARATOR } from "./constants";
 import { ChangeEventDetails } from "./utils/dispatch-change";
-import { humanizeKey } from "./utils/humanize";
+import { humanizeKey, humanizeValue } from "./utils/humanize";
+import { ajvFactory } from "./parser/ajv";
+import { ValidateFunction } from "ajv";
 
 @customElement("json-ui-element")
 export class JsonUiElement extends LitElement {
@@ -37,6 +39,9 @@ export class JsonUiElement extends LitElement {
   >;
 
   @state()
+  ajvValidateFn?: ValidateFunction;
+
+  @state()
   oneOfIndex = 0;
 
   @state()
@@ -54,10 +59,11 @@ export class JsonUiElement extends LitElement {
   ): void {
     // Always resolve the value because nested values may have changed.
     this.resolvedValue = this.path ? get(this.value, this.path) : this.value;
-    console.log('resolvedValue', this.resolvedValue, this.value, this.path)
     this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
 
     this.resolvedSchemas ??= {} as any;
+
+    if (this.schema && this.ajvValidateFn) this.ajvValidateFn!(this.value);
 
     // Determine the depth of changes to optimize the schema resolution process.
     // Note: oneOf and anyOf are currently only supported at the top level!
@@ -80,6 +86,8 @@ export class JsonUiElement extends LitElement {
     );
 
     if (updateLevel === 0) {
+      this.ajvValidateFn = ajvFactory().compile(this.schema);
+      this.ajvValidateFn!(this.value);
       this.resolvedSchemas.resolvedRefs = resolveRefs(this.schema);
       this.resolvedSchemas.resolvedAllOf = allOf(
         this.resolvedSchemas.resolvedRefs
@@ -102,13 +110,6 @@ export class JsonUiElement extends LitElement {
       }
 
       this.oneOfIndex = inferOneOfOption(
-        this.resolvedSchemas.navigated,
-        this.resolvedValue
-      );
-
-      console.log(
-        "oneOfIndex inferred",
-        this.oneOfIndex,
         this.resolvedSchemas.navigated,
         this.resolvedValue
       );
@@ -156,7 +157,7 @@ export class JsonUiElement extends LitElement {
 
     return html`
       <div class="grid grid-cols-1 gap-8">
-        ${this.renderHeader()}
+        ${this.renderHeader()} ${this.renderErrors()}
         ${navigated.oneOf &&
         html`<one-of-element
           @change=${(ev: CustomEvent<number>) => (this.oneOfIndex = ev.detail)}
@@ -220,6 +221,24 @@ export class JsonUiElement extends LitElement {
           <h1 class="text-4xl font-bold">${humanizeKey(title)}</h1>
           <p class="text-base text-slate-800">${description}</p>
         </div>
+      </div>
+    `;
+  }
+
+  private renderErrors() {
+    const errors = this.ajvValidateFn?.errors ?? [];
+    console.log(errors);
+    return html`
+      <div class="flex flex-col p-8 ring-2 ring-red-500 gap-4">
+        ${errors.map(
+          (e) =>
+            html`<div class="text-red-500 flex flex-col">
+              ${humanizeValue(e).map(
+                ([key, val]) =>
+                  html` <div><strong>${key}</strong>: ${val}</div> `
+              )}
+            </div>`
+        )}
       </div>
     `;
   }
