@@ -48,8 +48,8 @@ const icons: Record<string, string | TemplateResult> = {
   `,
 };
 
-@customElement("string-element")
-export class StringElement extends LitElement {
+@customElement("number-element")
+export class NumberElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
   @state()
@@ -58,50 +58,20 @@ export class StringElement extends LitElement {
   @property({ type: Object })
   readonly schema!: JSONSchema7;
 
-  @property({ type: String })
-  value = "";
+  @property({ type: Number })
+  value?: number;
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     if (_changedProperties.has("value") && !isString(this.value)) {
-      this.value = DEFAULT_VALUES["string"] as string;
+      this.value = DEFAULT_VALUES["number"] as number;
     }
   }
 
   firstUpdated() {
     const format = this.schema.format as string;
     this.icon = icons[format] || icons.string;
-
-    // const inputEl = this.shadowRoot?.querySelector("input") as HTMLInputElement;
-    // if (format === "date") {
-    //   IMask(inputEl, {
-    //     mask: "YYYY-MM-DD",
-    //     blocks: {
-    //       YYYY: {
-    //         mask: IMask.MaskedRange,
-    //         from: 1900,
-    //         to: 2099,
-    //       },
-    //       MM: {
-    //         mask: IMask.MaskedRange,
-    //         from: 1,
-    //         to: 12,
-    //       },
-    //       DD: {
-    //         mask: IMask.MaskedRange,
-    //         from: 1,
-    //         to: 31,
-    //       },
-    //     },
-    //     lazy: false,
-    //   });
-    // } else if (format === "email") {
-    //   IMask(inputEl, {
-    //     mask: /^\S*@?\S*$/,
-    //     lazy: false,
-    //   });
-    // }
   }
 
   private handleChange(ev: Event) {

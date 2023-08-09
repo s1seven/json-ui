@@ -1,16 +1,22 @@
-import { LitElement, TemplateResult, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import {
+  LitElement,
+  PropertyValueMap,
+  TemplateResult,
+  html,
+  unsafeCSS,
+} from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { JSONSchema7 } from "json-schema";
-import { PROPERTIES_KEY } from "./constants";
+import { DEFAULT_VALUES, PROPERTIES_KEY } from "./constants";
 import { inferType } from "./parser/infer";
 import { JSONSchema7Value } from "./utils/helper-types";
 import { ChangeEventDetails, dispatchChange } from "./utils/dispatch-change";
-import { AnyOfOption } from "./parser/any-of";
 import { humanizeKey, humanizeValue } from "./utils/humanize";
 import { choose } from "lit/directives/choose.js";
 import { when } from "lit/directives/when.js";
 import { isUndefined } from "lodash";
+import { navigate } from "./utils/path";
 
 /**
  * The body represents the main content of the JSON UI.
@@ -27,6 +33,15 @@ export class BodyElement extends LitElement {
   @property()
   value?: any;
 
+  @state()
+  required: string[] = [];
+
+  protected willUpdate(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    this.required = this.schema?.required ?? [];
+  }
+
   render() {
     if (!this.schema) return html`<div>no schema</div>`;
     const type = inferType(this.schema!);
@@ -36,8 +51,11 @@ export class BodyElement extends LitElement {
         [
           ["object", () => this.renderObject()],
           ["array", () => this.renderArray()],
+          ["string", () => this.renderPrimitive("string")],
+          ["number", () => this.renderPrimitive("string")],
+          ["enum", () => this.renderPrimitive("string")],
         ],
-        () => html`Unknown type ${type}`
+        () => html`Unknown type <strong>${type}</strong>.`
       )}
     `;
   }
@@ -50,31 +68,73 @@ export class BodyElement extends LitElement {
     );
   }
 
+  private renderPrimitive(
+    type: "string" | "number" | "enum",
+    key?: string | number,
+    skipHeader = false
+  ) {
+    const value = !isUndefined(key) ? this.value?.[key] : this.value;
+    const schema = navigate(this.schema!, key);
+    return html`<label class="flex flex-col gap-2 w-full">
+      ${when(!skipHeader && key, () =>
+        renderLabel(String(key), this.required.includes(String(key)))
+      )}
+      ${choose(type, [
+        [
+          "string",
+          () => html`<string-element
+            @change=${dispatchChange(this, String(key ?? ""))}
+            .value=${value}
+            .schema=${schema}
+          ></string-element>`,
+        ],
+        [
+          "number",
+          () => html`<number-element
+            @change=${dispatchChange(this, String(key ?? ""))}
+            .value=${value}
+            .schema=${schema}
+          ></number-element>`,
+        ],
+        [
+          "enum",
+          () => {
+            const enumOptions = ((schema?.enum as any[]) ?? []).map((item) =>
+              String(item)
+            );
+            return html`<single-dropdown-element
+              @change=${dispatchChange(this, String(key ?? ""))}
+              .options=${enumOptions}
+              .value=${value}
+            ></single-dropdown-element>`;
+          },
+        ],
+      ])}
+    </label>`;
+  }
+
   private renderObject() {
     const properties = Object.entries(
       (this.schema?.[PROPERTIES_KEY] as unknown as JSONSchema7Value[]) ?? []
     );
-    const required = this.schema?.required ?? [];
     return html`
       <div class="flex flex-col gap-8 items-start">
         ${properties.map(([key, prop]) => {
           const type = inferType(prop);
           const value = this.value?.[key];
 
-          if (type === "string")
-            return html`<label class="flex flex-col gap-2">
-              ${renderLabel(key, required.includes(key))}
-              <string-element
-                @change=${dispatchChange(this, key)}
-                .value=${value}
-                .schema=${prop}
-              ></string-element>
-            </label>`;
-
-          return html`<label class="inline-flex flex-col gap-2"
-            >${renderLabel(key, required.includes(key))}
-            ${this.renderValuePreview(key, value)}
-          </label>`;
+          return choose(
+            type,
+            [
+              ["string", () => this.renderPrimitive("string", key)],
+              ["number", () => this.renderPrimitive("number", key)],
+              ["enum", () => this.renderPrimitive("enum", key)],
+            ],
+            () => html`<label class="inline-flex flex-col gap-2"
+              >${renderLabel(key, this.required.includes(key))}
+              ${this.renderValuePreview(key, value)}
+            </label>`
+          );
         })}
       </div>
     `;
@@ -157,7 +217,15 @@ export class BodyElement extends LitElement {
       <ol class="mt-4 flex flex-col gap-4">
         ${((this.value as any[]) ?? []).map(
           (value, i) => html`<li class="list-decimal ml-6 pl-4">
-            ${this.renderValuePreview(i.toString(), value)}
+            ${choose(
+              inferType(itemSchema),
+              [
+                ["string", () => this.renderPrimitive("string", i, true)],
+                ["number", () => this.renderPrimitive("number", i, true)],
+                ["enum", () => this.renderPrimitive("enum", i, true)],
+              ],
+              () => this.renderValuePreview(i.toString(), value)
+            )}
           </li>`
         )}
         <li class="ml-6 pl-4 list-disc">
@@ -166,7 +234,11 @@ export class BodyElement extends LitElement {
               this.dispatchEvent(
                 new CustomEvent<ChangeEventDetails>("change", {
                   detail: {
-                    value: [...(this.value || []), {}],
+                    value: [
+                      ...(this.value || []),
+                      // TODO: pick what value you want to add according to itemSchema
+                      DEFAULT_VALUES[inferType(itemSchema) ?? "object"],
+                    ],
                     path: "",
                   },
                 })

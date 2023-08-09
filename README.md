@@ -8,9 +8,16 @@ A dynamic user interface for creating JSON documents according to a JSON schema.
 ## NOT SUPPORTED
 
 - multiple types
-- nested oneOf, anyOf, allOf (think of inferring values)
+- nested oneOf, anyOf (think of inferring values)
+- sub-objects within oneOf and anyOf (same reason)
 - null type
 - true | false type
+- inferring oneOf is a bit flawed if additionalProperties is true
+
+## Paths
+
+- Enum: `Certificate/Analysis/Inspections/0/ValueType`
+- Enum Array: ``
 
 ## JSON UI decision tree
 ```

@@ -43,5 +43,12 @@ export const inferOneOfOption = (
   value: unknown
 ): number => {
   const options = oneOfOptions(schema);
-  return options.findIndex((_, i) => ajv.compile(oneOf(schema, i))(value));
+  console.log(options, value);
+  return options.findIndex((_, i) => {
+    const a = oneOf(schema, i);
+    const b = ajv.compile(a);
+    const c = b(value);
+    console.log({ a, b, c, errors: b.errors });
+    return c;
+  });
 };

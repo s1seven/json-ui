@@ -4,6 +4,7 @@ import { JSONSchema7Value, ExtractObjects } from "../utils/helper-types";
 import { JSONSchema7 } from "json-schema";
 import Ajv from "ajv";
 import { ajv, ajvFactory } from "./ajv";
+import { navigate } from "../utils/path";
 
 export const getAnyOfVal = (
   item: JSONSchema7Value
@@ -37,6 +38,7 @@ export const anyOfOptions = (
   path: string,
   selectedIndices: number[] = []
 ): AnyOfOption[] => {
+  schema = path ? (navigate(schema, path) as JSONSchema7) : schema;
   const anyOfVal = getAnyOfVal(schema);
   if (!anyOfVal) return [];
   const clonedSchema = structuredClone(schema);

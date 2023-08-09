@@ -31,6 +31,9 @@ export class AnyOfElement extends LitElement {
       this.path!,
       this.value ?? []
     )?.map((option) => option.title);
+
+    console.log({ options }, this.schema, this.path, this.value);
+
     return options
       ? html`
           <checkbox-group-element

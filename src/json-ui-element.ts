@@ -4,12 +4,12 @@ import styles from "./index.css?inline";
 import { resolveRefs } from "./parser/resolve-refs";
 import { allOf } from "./parser/all-of";
 import { JSONSchema7 } from "json-schema";
-import { firstPathSegment, joinPaths, navigate } from "./utils/path";
+import { joinPaths, navigate } from "./utils/path";
 import { inferOneOfOption, oneOf } from "./parser/one-of";
 import { anyOf, inferAnyOfOptions } from "./parser/any-of";
 import { get, isEmpty, isNull, isUndefined, set } from "lodash";
 import { inferDescription, inferTitle, inferType } from "./parser/infer";
-import { DEFAULT_VALUES, PATH_SEPARATOR } from "./constants";
+import { ROOT_PATH, DEFAULT_VALUES, PATH_SEPARATOR } from "./constants";
 import { ChangeEventDetails } from "./utils/dispatch-change";
 import { humanizeKey } from "./utils/humanize";
 
@@ -21,12 +21,10 @@ export class JsonUiElement extends LitElement {
   schema!: JSONSchema7;
 
   @property({ type: Object })
-  value?: any = {
-    RefSchemaUrl: "loremmmm",
-  };
+  value?: any;
 
   @state()
-  path = "";
+  path = ROOT_PATH;
 
   @state()
   resolvedSchemas!: Record<
@@ -56,11 +54,13 @@ export class JsonUiElement extends LitElement {
   ): void {
     // Always resolve the value because nested values may have changed.
     this.resolvedValue = this.path ? get(this.value, this.path) : this.value;
+    console.log('resolvedValue', this.resolvedValue, this.value, this.path)
     this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
 
     this.resolvedSchemas ??= {} as any;
 
     // Determine the depth of changes to optimize the schema resolution process.
+    // Note: oneOf and anyOf are currently only supported at the top level!
     const updateLevel = [
       "schema",
       "path",
@@ -89,12 +89,26 @@ export class JsonUiElement extends LitElement {
     if (updateLevel <= 1) {
       this.dispatchEvent(new CustomEvent("navigate", { detail: this.path }));
 
-      this.resolvedSchemas.navigated = navigate(
+      const navigatedSchema = navigate(
         this.resolvedSchemas.resolvedAllOf,
         this.path
       );
 
+      if (isUndefined(navigatedSchema)) {
+        this.path = ROOT_PATH;
+        this.resolvedSchemas.navigated = this.resolvedSchemas.resolvedAllOf;
+      } else {
+        this.resolvedSchemas.navigated = navigatedSchema;
+      }
+
       this.oneOfIndex = inferOneOfOption(
+        this.resolvedSchemas.navigated,
+        this.resolvedValue
+      );
+
+      console.log(
+        "oneOfIndex inferred",
+        this.oneOfIndex,
         this.resolvedSchemas.navigated,
         this.resolvedValue
       );

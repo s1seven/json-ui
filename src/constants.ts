@@ -6,10 +6,10 @@ export const REF_KEY = "$ref";
 
 export const PATH_SEPARATOR = ".";
 
-// Additional JSON Schema keywords for strict validation.
+// Additional JSON Schema keywords, allowed for strict validation.
 export const AJV_ALLOWED_KEYWORDS = ["meta:license"];
 
-export const DEFAULT_VALUES: Record<JSONSchema7TypeName, unknown> = {
+export const DEFAULT_VALUES: Record<JSONSchema7TypeName | "enum", unknown> = {
   number: 0,
   string: "",
   integer: 0,
@@ -17,4 +17,7 @@ export const DEFAULT_VALUES: Record<JSONSchema7TypeName, unknown> = {
   array: [],
   object: {},
   null: null,
+  enum: "",
 };
+
+export const ROOT_PATH = "";

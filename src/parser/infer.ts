@@ -12,7 +12,7 @@ import { lastPathSegment } from "../utils/path";
 
 export const inferType = (
   schema: JSONSchema7 | JSONSchema7Value
-): JSONSchema7TypeName | undefined => {
+): JSONSchema7TypeName | "enum" | undefined => {
   if (isBoolean(schema)) return "boolean";
   if (isString(schema)) return "string";
   if (isNumber(schema)) return "number";
@@ -23,6 +23,7 @@ export const inferType = (
   if (schema.type) return schema.type as JSONSchema7TypeName;
   if (schema.properties) return "object";
   if (schema.items) return "array";
+  if (schema.enum) return "enum";
   return void 0;
 };
 
