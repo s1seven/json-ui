@@ -6,7 +6,6 @@ import {
   isNumber,
   isObject,
   isString,
-  isUndefined,
 } from "lodash";
 import { JSONSchema7Value } from "../utils/helper-types";
 import { lastPathSegment } from "../utils/path";

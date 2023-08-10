@@ -4,7 +4,6 @@ import isBoolean from "lodash/isBoolean";
 import isNull from "lodash/isNull";
 import isUndefined from "lodash/isUndefined";
 import isArray from "lodash/isArray";
-import isPlainObject from "lodash/isPlainObject";
 import map from "lodash/map";
 import { every, isObject, size } from "lodash";
 

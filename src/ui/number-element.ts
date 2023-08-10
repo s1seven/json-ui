@@ -8,10 +8,7 @@ import {
 import { customElement, property, state } from "lit/decorators.js";
 import styles from "../index.css?inline";
 import { JSONSchema7 } from "json-schema";
-import IMask from "imask";
-import Ajv from "ajv";
-import { ajv } from "../parser/ajv";
-import { isNumber, isString } from "lodash";
+import { isNumber } from "lodash";
 import { DEFAULT_VALUES } from "../constants";
 
 /**
@@ -91,7 +88,7 @@ export class NumberElement extends LitElement {
   }
 
   render() {
-    const errors = this.validate();
+    // const errors = this.validate();
     return html`
       <div
         class="relative pointer-events-auto w-full text-slate-700 select-none"
@@ -117,13 +114,14 @@ export class NumberElement extends LitElement {
             >${this.schema.pattern}</span
           >`
         : ""}
-      ${errors
-        ? errors.map(
-            (error) => html`<span class="text-sm block pt-1 text-red-500"
-              >${error.message}</span
-            >`
-          )
-        : ""}
     `;
   }
 }
+
+// ${errors
+//   ? errors.map(
+//       (error) => html`<span class="text-sm block pt-1 text-red-500"
+//         >${error.message}</span
+//       >`
+//     )
+//   : ""}

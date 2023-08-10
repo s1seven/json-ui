@@ -11,6 +11,6 @@ test("it matches the snapshot", async () => {
 test("oneOf options parsed correctly", async () => {
   const schema = (await import("../../fixtures/schema-with-one-of.json"))
     .default as unknown as JSONSchema7;
-  const result = oneOfOptions(schema, "", 1);
+  const result = oneOfOptions(schema);
   expect(result).toMatchSnapshot();
 });

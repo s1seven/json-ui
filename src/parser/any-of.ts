@@ -1,10 +1,8 @@
-import { isObject, isArray, omit, get, set, isBoolean } from "lodash";
+import { isObject, isArray, omit, isBoolean } from "lodash";
 import { deepMerge } from "../utils/deep-merge";
 import { JSONSchema7Value, ExtractObjects } from "../utils/helper-types";
 import { JSONSchema7 } from "json-schema";
-import Ajv from "ajv";
-import { ajv, ajvFactory } from "./ajv";
-import { navigateSchema } from "../utils/path";
+import { ajvFactory } from "./ajv";
 import { ANY_OF_KEY, ANY_OF_REF_KEY } from "../constants";
 
 export const getAnyOfVal = (
