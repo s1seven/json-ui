@@ -50,7 +50,6 @@ export class BodyElement extends LitElement {
   render() {
     if (!this.schema) return html`<div>no schema</div>`;
     const type = inferType(this.schema!, this.value);
-    console.log({ type }, this.schema, this.value);
     return html`
       ${choose(
         type,
