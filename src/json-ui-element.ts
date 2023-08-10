@@ -139,7 +139,7 @@ export class JsonUiElement extends LitElement {
 
   private handleChange(ev: CustomEvent<any>) {
     const resolvedPath = joinPaths(this.path, ev.detail.path);
-    const expectedType = inferType(this.schema);
+    const expectedType = inferType(this.schema, this.value);
     if (expectedType === void 0)
       throw new Error("Could not determine base schema type.");
     if (
