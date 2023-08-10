@@ -24,19 +24,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "publish-minor": "npm run build && npm version minor && npm publish --access public && git push && git push --tags",
     "test": "jest",
     "test:update-snapshots": "npm test -- -u"
   },
-  "main": "./dist/json-ui.umd.cjs",
+  "main": "./dist/json-ui.umd.js",
   "module": "./dist/json-ui.es.js",
-  "types": "./dist/src/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/json-ui.js",
-      "require": "./dist/json-ui.umd.cjs"
+      "require": "./dist/json-ui.umd.js"
     }
   },
   "files": [

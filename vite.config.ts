@@ -11,11 +11,16 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: "dist",
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       name: "json-ui",
-      fileName: (format) => `json-ui.${format}.js`
+      fileName: (format) => `json-ui.${format}.js`,
     },
-    rollupOptions: {},
+    rollupOptions: {
+      output: {
+        dir: "dist",
+      },
+    },
   },
 });
