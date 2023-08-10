@@ -27,6 +27,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "publish-minor": "npm run build && npm version minor && npm publish --access public && git push && git push --tags",
+    "link": "npm link",
     "test": "jest",
     "test:update-snapshots": "npm test -- -u"
   },

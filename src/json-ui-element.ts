@@ -153,7 +153,7 @@ export class JsonUiElement extends LitElement {
   }
 
   render() {
-    console.debug(`🧠 [DEBUG] Rendering JSON UI.`);
+    console.debug(`🧠 [DEBUG] Rendering JSON UI.`, this.resolvedSchemas);
     const { resolvedAnyOf, navigated, resolvedOneOf } = this.resolvedSchemas;
 
     return html`

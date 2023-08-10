@@ -21,8 +21,37 @@
         const el = document.createElement("json-ui-element");
 
         Object.assign(el, {
-          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
-          // schema: {},
+          // schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          schema: {
+            properties: {
+              name: {
+                type: "string",
+              },
+              age: {
+                type: "number",
+              },
+              address: {
+                type: "object",
+                properties: {
+                  street: {
+                    type: "string",
+                  },
+                  city: {
+                    type: "string",
+                  },
+                  state: {
+                    type: "string",
+                  },
+                  zip: {
+                    type: "string",
+                  },
+                },
+              },
+              uni: {
+                enum: ["UNIVIE", "TU MÜNCHEN", "ETH ZÜRICH"],
+              },
+            },
+          },
           path: location.hash.replaceAll("/", ".").slice(1),
           // value: {
           //   firstName: "Jane",
