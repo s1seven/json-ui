@@ -35,7 +35,7 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/json-ui.js",
+      "import": "./dist/json-ui.es.js",
       "require": "./dist/json-ui.umd.js"
     }
   },
