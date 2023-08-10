@@ -26,7 +26,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "publish": "npm version minor && npm publish --access public && git push && git push --tags",
+    "publish-minor": "npm version minor && npm publish --access public && git push && git push --tags",
     "test": "jest",
     "test:update-snapshots": "npm test -- -u"
   },
