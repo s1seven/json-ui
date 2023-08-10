@@ -31,8 +31,8 @@
     "test:update-snapshots": "npm test -- -u"
   },
   "main": "./dist/json-ui.umd.cjs",
-  "module": "./dist/json-ui.js",
-  "types": "./dist/index.d.ts",
+  "module": "./dist/json-ui.es.js",
+  "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/json-ui.js",

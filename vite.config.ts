@@ -14,7 +14,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       name: "json-ui",
-      fileName: "json-ui",
+      fileName: (format) => `json-ui.${format}.js`
     },
     rollupOptions: {},
   },
