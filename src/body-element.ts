@@ -3,12 +3,17 @@ import {
   PropertyValueMap,
   TemplateResult,
   html,
+  nothing,
   unsafeCSS,
 } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { JSONSchema7 } from "json-schema";
-import { DEFAULT_VALUES, PROPERTIES_KEY } from "./constants";
+import {
+  ADDITIONAL_PROPERTIES_KEY,
+  DEFAULT_VALUES,
+  PROPERTIES_KEY,
+} from "./constants";
 import { inferType } from "./parser/infer";
 import { JSONSchema7Value } from "./utils/helper-types";
 import { ChangeEventDetails, dispatchChange } from "./utils/dispatch-change";
@@ -44,12 +49,26 @@ export class BodyElement extends LitElement {
 
   render() {
     if (!this.schema) return html`<div>no schema</div>`;
-    const type = inferType(this.schema!);
+    const type = inferType(this.schema!, this.value);
+    console.log({ type }, this.schema, this.value);
     return html`
       ${choose(
         type,
         [
-          ["object", () => this.renderObject()],
+          [
+            "object",
+            () =>
+              this.renderObject(
+                Object.entries(
+                  (this.schema?.[
+                    PROPERTIES_KEY
+                  ] as unknown as JSONSchema7Value[]) ?? []
+                ).map(([key, prop]) => [
+                  key,
+                  inferType(prop, this.value?.[key]),
+                ])
+              ),
+          ],
           ["array", () => this.renderArray()],
           ["string", () => this.renderPrimitive("string")],
           ["number", () => this.renderPrimitive("string")],
@@ -75,7 +94,7 @@ export class BodyElement extends LitElement {
     skipHeader = false
   ) {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
-    const schema = navigateSchema(this.schema!, key);
+    const schema = navigateSchema(this.schema!, key) ?? {};
     return html`<label class="flex flex-col gap-2 w-full">
       ${when(!skipHeader && key, () =>
         renderLabel(String(key), this.required.includes(String(key)))
@@ -122,31 +141,55 @@ export class BodyElement extends LitElement {
     </label>`;
   }
 
-  private renderObject() {
-    const properties = Object.entries(
+  private renderObject = (
+    properties: [key: string, type: ReturnType<typeof inferType>][],
+    skipAdditionalProperties = false
+  ): TemplateResult => html`
+    <div class="flex flex-col gap-8 items-start">
+      ${properties.map(([key, type]) => {
+        const value = this.value?.[key];
+        return choose(
+          type,
+          [
+            ["string", () => this.renderPrimitive("string", key)],
+            ["number", () => this.renderPrimitive("number", key)],
+            ["enum", () => this.renderPrimitive("enum", key)],
+            ["boolean", () => this.renderPrimitive("boolean", key, true)],
+          ],
+          () => html`<label class="w-full inline-flex flex-col gap-2"
+            >${renderLabel(key, this.required.includes(key))}
+            ${this.renderValuePreview(key, value)}
+          </label>`
+        );
+      })}
+      ${when(!skipAdditionalProperties, () =>
+        this.renderAdditionalProperties()
+      )}
+    </div>
+  `;
+
+  private renderAdditionalProperties() {
+    const additionalProperties = this.schema?.[ADDITIONAL_PROPERTIES_KEY];
+    if (additionalProperties === false) return nothing;
+    const propertyKeys = Object.keys(
       (this.schema?.[PROPERTIES_KEY] as unknown as JSONSchema7Value[]) ?? []
     );
-    return html`
-      <div class="flex flex-col gap-8 items-start">
-        ${properties.map(([key, prop]) => {
-          const type = inferType(prop);
-          const value = this.value?.[key];
+    const unspecifiedProperties: [
+      key: string,
+      type: ReturnType<typeof inferType>
+    ][] = Object.entries(this.value ?? {})
+      .filter(([key]) => !propertyKeys.includes(key))
+      .map(([key, value]) => [key, inferType(undefined, value)]);
 
-          return choose(
-            type,
-            [
-              ["string", () => this.renderPrimitive("string", key)],
-              ["number", () => this.renderPrimitive("number", key)],
-              ["enum", () => this.renderPrimitive("enum", key)],
-              ["boolean", () => this.renderPrimitive("boolean", key, true)],
-            ],
-            () => html`<label class="w-full inline-flex flex-col gap-2"
-              >${renderLabel(key, this.required.includes(key))}
-              ${this.renderValuePreview(key, value)}
-            </label>`
-          );
-        })}
+    return html`
+      <div class="flex flex-col gap-4">
+        <h3 class="text-2xl font-bold">Additional properties</h3>
+        <p class="text-base text-slate-800">
+          Attach any additional information.
+        </p>
       </div>
+      ${this.renderObject(unspecifiedProperties, true)}
+      <button>ADD PROPERTYYYY</button>
     `;
   }
 

@@ -1,6 +1,7 @@
 import { JSONSchema7TypeName } from "json-schema";
 
 export const PROPERTIES_KEY = "properties";
+export const ADDITIONAL_PROPERTIES_KEY = "additionalProperties";
 export const REQUIRED_KEY = "required";
 export const REF_KEY = "$ref";
 export const ANY_OF_KEY = "anyOf";
