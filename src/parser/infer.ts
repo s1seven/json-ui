@@ -9,11 +9,12 @@ import {
 } from "lodash";
 import { JSONSchema7Value } from "../utils/helper-types";
 import { lastPathSegment } from "../utils/path";
+import { ALL_TYPES } from "../constants";
 
 export const inferType = (
   schema?: JSONSchema7 | JSONSchema7Value,
   value?: any
-): JSONSchema7TypeName | "enum" | undefined => {
+): (typeof ALL_TYPES)[number] => {
   if (isBoolean(schema)) return "boolean";
   if (isString(schema)) return "string";
   if (isNumber(schema)) return "number";

@@ -30,18 +30,12 @@ export class OneOfElement extends LitElement {
     const options = oneOfOptions(this.schema);
     return options
       ? html`
-          <select @change=${(ev: any) => this.handleChange(~~ev.target.value)}>
-            <option value="-1">DEFAULT</option>
-            ${options?.map(
-              (option, i) =>
-                html` <option
-                  ?selected=${this.value === i}
-                  .value=${i.toString()}
-                >
-                  ${option}
-                </option>`
-            )}
-          </select>
+          <single-dropdown-element
+            .options=${options}
+            .value=${options[this.value] ?? "DEFAULT"}
+            @change=${(ev: CustomEvent<{ value: string }>) =>
+              this.handleChange(options.indexOf(ev.detail.value))}
+          ></single-dropdown-element>
         `
       : nothing;
   }

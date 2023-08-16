@@ -1,16 +1,44 @@
 import { JSONSchema7 } from "json-schema";
-import { PATH_SEPARATOR } from "../constants";
+import { PATH_SEPARATOR, PATH_UP } from "../constants";
 import { inferType } from "../parser/infer";
-import { get, isNumber, isUndefined } from "lodash";
+import {
+  concat,
+  dropRight,
+  filter,
+  flatMap,
+  get,
+  isNumber,
+  isString,
+  isUndefined,
+  join,
+  reduce,
+  split,
+  trim,
+} from "lodash";
 import { anyOf, inferAnyOfOptions } from "../parser/any-of";
 import { inferOneOfOption, oneOf } from "../parser/one-of";
 
-export const joinPaths = (...paths: (string | undefined)[]) =>
-  paths
-    .filter(Boolean)
-    .join(PATH_SEPARATOR)
-    .replace(/^\.*|\.*$/g, "")
-    .replace(/\.{2,}/g, ".");
+export type PathSegment = undefined | string | typeof PATH_UP;
+
+export const joinPaths = (...paths: PathSegment[]) =>
+  trim(
+    join(
+      reduce<Exclude<PathSegment, undefined>, string[]>(
+        flatMap<Exclude<PathSegment, undefined>, string>(
+          filter<PathSegment, Exclude<PathSegment, undefined>>(
+            paths,
+            (item): item is Exclude<PathSegment, undefined> =>
+              !isUndefined(item)
+          ),
+          (item) => (isString(item) ? split(item, ".") : [item]) as string[]
+        ),
+        (acc, item) => (item === PATH_UP ? dropRight(acc) : [...acc, item]),
+        []
+      ),
+      PATH_SEPARATOR
+    ),
+    PATH_SEPARATOR
+  );
 
 export const popPath = (path: string): string =>
   path.split(PATH_SEPARATOR).slice(0, -1).join(PATH_SEPARATOR);
@@ -33,8 +61,8 @@ export const navigateSchema = (
     ([scm, val], key) => {
       if (isUndefined(scm)) return [scm, val];
 
-      const appliedOneOfOption = inferOneOfOption(scm, val);
-      scm = oneOf(scm, appliedOneOfOption);
+      const appliedOneOfOption = inferOneOfOption(scm, val)[0];
+      appliedOneOfOption !== -1 && (scm = oneOf(scm, appliedOneOfOption));
 
       const appliedAnyOfOptions = inferAnyOfOptions(scm, val);
       scm = anyOf(scm, appliedAnyOfOptions, true);

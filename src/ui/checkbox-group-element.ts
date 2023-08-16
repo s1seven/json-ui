@@ -12,7 +12,7 @@ export class CheckboxGroupElement extends LitElement {
   static readonly styles = unsafeCSS(styles);
 
   @property({ type: Array })
-  readonly options: (string | TemplateResult) [] = [];
+  readonly options: (string | TemplateResult)[] = [];
 
   @property({ type: Array })
   readonly value: number[] = [];
@@ -34,24 +34,23 @@ export class CheckboxGroupElement extends LitElement {
   }
 
   render() {
-    return html`<span class="text-slate-800">Select at least 1 item.</span>
-      <ul class="flex flex-col gap-4 mt-4">
-        ${this.options.map(
-          (option, i) => html`
-            <li>
-              <label class="flex gap-4 items-center">
-                <input
-                  ?checked=${this.value.includes(i)}
-                  value=${i}
-                  @change=${this.handleChange}
-                  type="checkbox"
-                  class="w-5 h-5 shrink-0 [&:checked]:ring-blue-600 ring-2 border-none ring-slate-900 rounded-sm text-blue-600 focus:ring-blue-500"
-                />
-                <span>${option}</span>
-              </label>
-            </li>
-          `
-        )}
-      </ul>`;
+    return html` <ul class="flex flex-col gap-4 mt-4">
+      ${this.options.map(
+        (option, i) => html`
+          <li>
+            <label class="flex gap-4 items-center">
+              <input
+                ?checked=${this.value.includes(i)}
+                value=${i}
+                @change=${this.handleChange}
+                type="checkbox"
+                class="w-5 h-5 cursor-pointer shrink-0 [&:checked]:ring-green-600 ring-2 border-none ring-slate-900 rounded-sm text-green-600 focus:ring-green-500"
+              />
+              <span>${option}</span>
+            </label>
+          </li>
+        `
+      )}
+    </ul>`;
   }
 }

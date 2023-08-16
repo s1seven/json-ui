@@ -62,7 +62,7 @@ export class NumberElement extends LitElement {
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     if (_changedProperties.has("value") && !isNumber(this.value)) {
-      this.value = DEFAULT_VALUES["number"] as number;
+      this.value = DEFAULT_VALUES["number"]() as number;
     }
   }
 

@@ -5,11 +5,18 @@ A dynamic user interface for creating JSON documents according to a JSON schema.
 ![JSON UI Screenshot](./screenshot.png)
 
 
+
+## TODO
+
+- uniqueItems
+- remove array items
+
+
 ## NOT SUPPORTED
 
 - multiple types
-- nested oneOf, anyOf (think of inferring values)
-- sub-objects within oneOf and anyOf (same reason)
+- _nested oneOf, anyOf (think of inferring values)_
+- _sub-objects within oneOf and anyOf (same reason)_
 - null type
 - true | false type
 - inferring oneOf is a bit flawed if additionalProperties is true

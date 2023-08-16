@@ -3,6 +3,7 @@ import { ExtractObjects, JSONSchema7Value } from "../utils/helper-types";
 import { deepMerge } from "../utils/deep-merge";
 import { JSONSchema7 } from "json-schema";
 import { ajv } from "./ajv";
+import { ErrorObject } from "ajv";
 
 export const getOneOfProp = (
   item: JSONSchema7Value
@@ -38,12 +39,15 @@ export const oneOfOptions = (schema: JSONSchema7) =>
 export const inferOneOfOption = (
   schema: JSONSchema7,
   value: unknown
-): number => {
+): [number, null | ErrorObject[]] => {
   const options = oneOfOptions(schema);
-  return options.findIndex((_, i) => {
+  let errors = null;
+  const index = options.findIndex((_, i) => {
     const a = oneOf(schema, i);
     const b = ajv.compile(a);
     const c = b(value);
+    errors = b.errors;
     return c;
   });
+  return [index, errors];
 };

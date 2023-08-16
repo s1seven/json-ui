@@ -5,15 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JSON Editor</title>
     <link rel="stylesheet" href="./src/index.css" />
-    <script type="module" src="/src/json-ui-element.ts"></script>
-    <script type="module" src="/src/one-of-element.ts"></script>
-    <script type="module" src="/src/any-of-element.ts"></script>
-    <script type="module" src="/src/body-element.ts"></script>
-    <script type="module" src="/src/ui/checkbox-group-element.ts"></script>
-    <script type="module" src="/src/ui/checkbox-element.ts"></script>
-    <script type="module" src="/src/ui/string-element.ts"></script>
-    <script type="module" src="/src/ui/single-dropdown-element.ts"></script>
-    <script type="module" src="/src/ui/number-element.ts"></script>
+    <script type="module" src="/src/index.ts"></script>
 
     <script>
       window.addEventListener("load", async () => {
@@ -21,38 +13,38 @@
         const el = document.createElement("json-ui-element");
 
         Object.assign(el, {
-          // schema: await (await fetch("./fixtures/coa-schema.json")).json(),
-          schema: {
-            properties: {
-              name: {
-                type: "string",
-              },
-              age: {
-                type: "number",
-              },
-              address: {
-                type: "object",
-                properties: {
-                  street: {
-                    type: "string",
-                  },
-                  city: {
-                    type: "string",
-                  },
-                  state: {
-                    type: "string",
-                  },
-                  zip: {
-                    type: "string",
-                  },
-                },
-              },
-              uni: {
-                enum: ["UNIVIE", "TU MÜNCHEN", "ETH ZÜRICH"],
-              },
-            },
-          },
-          path: location.hash.replaceAll("/", ".").slice(1),
+          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          // schema: {
+          //   properties: {
+          //     name: {
+          //       type: "string",
+          //     },
+          //     age: {
+          //       type: "number",
+          //     },
+          //     address: {
+          //       type: "object",
+          //       properties: {
+          //         street: {
+          //           type: "string",
+          //         },
+          //         city: {
+          //           type: "string",
+          //         },
+          //         state: {
+          //           type: "string",
+          //         },
+          //         zip: {
+          //           type: "string",
+          //         },
+          //       },
+          //     },
+          //     uni: {
+          //       enum: ["UNIVIE", "TU MÜNCHEN", "ETH ZÜRICH"],
+          //     },
+          //   },
+          // },
+          path: location.hash.replace(/\//i, '').replaceAll("/", ".").slice(1),
           // value: {
           //   firstName: "Jane",
           //   lastName: "Doe",
@@ -90,7 +82,7 @@
         });
 
         el.addEventListener("navigate", (e) => {
-          location.hash = e.detail.replaceAll(".", "/");
+          location.hash = '/' + e.detail.replaceAll(".", "/");
         });
 
         document.querySelector("#host").appendChild(el);

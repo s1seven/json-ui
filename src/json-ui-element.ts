@@ -11,7 +11,7 @@ import { get, isEmpty, isNull, isUndefined, set } from "lodash";
 import { inferDescription, inferTitle, inferType } from "./parser/infer";
 import { ROOT_PATH, DEFAULT_VALUES, PATH_SEPARATOR } from "./constants";
 import { ChangeEventDetails } from "./utils/dispatch-change";
-import { humanizeKey, humanizeValue } from "./utils/humanize";
+import { humanizeKey } from "./utils/humanize";
 import { ajvFactory } from "./parser/ajv";
 import { ValidateFunction } from "ajv";
 
@@ -57,11 +57,10 @@ export class JsonUiElement extends LitElement {
   protected willUpdate(
     changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
+    this.resolvedSchemas ??= {} as any;
+
     // Always resolve the value because nested values may have changed.
     this.resolvedValue = this.path ? get(this.value, this.path) : this.value;
-    this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
-
-    this.resolvedSchemas ??= {} as any;
 
     if (this.schema && this.ajvValidateFn) this.ajvValidateFn!(this.value);
 
@@ -75,6 +74,7 @@ export class JsonUiElement extends LitElement {
     ].findIndex((prop) => changedProperties.has(prop));
 
     if (updateLevel === -1) {
+      this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
       console.debug(`🛠️ [DEBUG] No schema update required.`, {
         changedProperties,
       });
@@ -97,8 +97,6 @@ export class JsonUiElement extends LitElement {
     }
 
     if (updateLevel <= 1) {
-      this.dispatchEvent(new CustomEvent("navigate", { detail: this.path }));
-
       const navigatedSchema = navigateSchema(
         this.resolvedSchemas.resolvedAllOf,
         this.path,
@@ -107,15 +105,18 @@ export class JsonUiElement extends LitElement {
 
       if (isUndefined(navigatedSchema)) {
         this.path = ROOT_PATH;
+        this.resolvedValue = get(this.value, this.path);
         this.resolvedSchemas.navigated = this.resolvedSchemas.resolvedAllOf;
       } else {
         this.resolvedSchemas.navigated = navigatedSchema;
       }
 
+      this.dispatchEvent(new CustomEvent("navigate", { detail: this.path }));
+
       this.oneOfIndex = inferOneOfOption(
         this.resolvedSchemas.navigated,
         this.resolvedValue
-      );
+      )[0];
     }
 
     if (updateLevel <= 2) {
@@ -139,15 +140,16 @@ export class JsonUiElement extends LitElement {
 
   private handleChange(ev: CustomEvent<any>) {
     const resolvedPath = joinPaths(this.path, ev.detail.path);
-    const expectedType = inferType(this.schema, this.value);
-    if (expectedType === void 0)
+    const expectedRootType = inferType(this.schema, this.value);
+    if (expectedRootType === void 0)
       throw new Error("Could not determine base schema type.");
     if (
-      typeof this.value !== expectedType ||
+      typeof this.value !== expectedRootType ||
       isNull(this.value) ||
       isUndefined(this.value)
     )
-      this.value = DEFAULT_VALUES[expectedType];
+      this.value = DEFAULT_VALUES[expectedRootType]();
+
     set(this.value, resolvedPath, ev.detail.value);
     this.requestUpdate();
   }
@@ -158,7 +160,7 @@ export class JsonUiElement extends LitElement {
 
     return html`
       <div class="grid grid-cols-1 gap-8">
-        ${this.renderHeader()} ${this.renderErrors()}
+        ${this.renderHeader()}
         ${navigated.oneOf &&
         html`<one-of-element
           @change=${(ev: CustomEvent<number>) => (this.oneOfIndex = ev.detail)}
@@ -176,9 +178,10 @@ export class JsonUiElement extends LitElement {
         <body-element
           @change=${this.handleChange}
           @navigate=${(ev: CustomEvent<string>) =>
-            (this.path = joinPaths(this.path, ev.detail))}
+            (this.path = joinPaths(this.path, ...ev.detail))}
           .schema=${resolvedAnyOf}
           .value=${this.resolvedValue}
+          .path=${this.path}
         ></body-element>
 
         ${this.renderNextButton()}
@@ -194,21 +197,11 @@ export class JsonUiElement extends LitElement {
     const pathParts = this.path.split(PATH_SEPARATOR);
     return html`
       <div class="flex flex-col gap-8">
-        <div class="border-b border-black">
-          <button
-            class="text-blue-500"
-            @click=${() => {
-              pathParts?.pop();
-              this.path = pathParts?.join(PATH_SEPARATOR);
-            }}
-          >
-            Back
-          </button>
-        </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center select-none text-slate-800">
           ${pathParts.map(
             (part, i, arr) =>
               html`<a
+                  class="cursor-pointer p-0.5 inline-block rounded-sm active:text-slate-500 underline underline-offset-4"
                   @click=${() =>
                     (this.path = pathParts
                       .filter((_, k) => k <= i)
@@ -225,22 +218,22 @@ export class JsonUiElement extends LitElement {
     `;
   }
 
-  private renderErrors() {
-    const errors = this.ajvValidateFn?.errors ?? [];
-    return html`
-      <div class="hidden flex flex-col p-8 ring-2 ring-red-500 gap-4">
-        ${errors.map(
-          (e) =>
-            html`<div class="text-red-500 flex flex-col">
-              ${humanizeValue(e).map(
-                ([key, val]) =>
-                  html` <div><strong>${key}</strong>: ${val}</div> `
-              )}
-            </div>`
-        )}
-      </div>
-    `;
-  }
+  // private renderErrors() {
+  //   const errors = this.ajvValidateFn?.errors ?? [];
+  //   return html`
+  //     <div class="hidden flex flex-col p-8 ring-2 ring-red-500 gap-4">
+  //       ${errors.map(
+  //         (e) =>
+  //           html`<div class="text-red-500 flex flex-col">
+  //             ${humanizeValue(e).map(
+  //               ([key, val]) =>
+  //                 html` <div><strong>${key}</strong>: ${val}</div> `
+  //             )}
+  //           </div>`
+  //       )}
+  //     </div>
+  //   `;
+  // }
 
   private renderNextButton() {
     return nothing;

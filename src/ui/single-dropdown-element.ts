@@ -2,6 +2,7 @@ import { LitElement, html, nothing, unsafeCSS } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import styles from "../index.css?inline";
 import { ifSelectKey } from "../utils/if-select-key";
+import { icons } from "./icons";
 
 /**
  * Select one string option from a list of options.
@@ -67,26 +68,12 @@ export class SingleDropdownElement extends LitElement {
           ? "z-10"
           : ""}"
       >
-        <div
-          tabindex="0"
-          class="mt-2 flex items-center justify-between rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-slate-700/30 cursor-default focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          @keydown="${ifSelectKey(() => (this.show = true))}"
-          @click="${() => (this.show = true)}"
+        <button-element
+          @click="${() => (this.show = !this.show)}"
+          .icon=${icons.EXPAND_ALL()}
+          size="s"
+          >${this.value || html`&nbsp;`}</button-element
         >
-          ${this.value || html`&nbsp;`}
-          <svg
-            class="h-5 w-5 text-gray-400"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z"
-              clip-rule="evenodd"
-            ></path>
-          </svg>
-        </div>
 
         ${this.show
           ? html`
@@ -95,13 +82,13 @@ export class SingleDropdownElement extends LitElement {
                 @click="${this.hide}"
               ></div>
               <ul
-                class="absolute w-full px-0 py-2 mt-2 items-center justify-between rounded-md bg-white shadow-md ring-1 ring-slate-700/10"
+                class="absolute w-full px-0 py-2 mt-2 items-center justify-between rounded-sm bg-white shadow-md ring-1 ring-slate-700/10"
               >
                 ${this.searchable
                   ? html`<li class="block px-3 py-2">
                       <input
                         @input=${this.handleSearch}
-                        class="w-full rounded-md px-3 py-2 shadow-sm ring-1 ring-slate-700/10"
+                        class="w-full rounded-sm px-3 py-2 shadow-sm ring-1 ring-slate-700/10"
                         placeholder="Search"
                       />
                     </li>`

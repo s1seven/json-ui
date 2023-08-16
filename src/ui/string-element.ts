@@ -62,13 +62,13 @@ export class StringElement extends LitElement {
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     if (_changedProperties.has("value") && !isString(this.value)) {
-      this.value = DEFAULT_VALUES["string"] as string;
+      this.value = DEFAULT_VALUES["string"]() as string;
     }
   }
 
   firstUpdated() {
-    const format = this.schema.format as string;
-    this.icon = icons[format] || icons.string;
+    // const format = this.schema.format as string;
+    // this.icon = icons[format] || icons.string;
 
     // const inputEl = this.shadowRoot?.querySelector("input") as HTMLInputElement;
     // if (format === "date") {
@@ -124,31 +124,30 @@ export class StringElement extends LitElement {
         class="relative pointer-events-auto w-full text-slate-700 select-none"
       >
         <div
-          class="flex rounded-sm overflow-hidden bg-white shadow-sm ring-2 border-none ring-slate-900 cursor-text focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500"
+          class="flex overflow-hidden bg-white shadow-sm ring-1 box-border border-none ring-slate-400 cursor-text focus-within:outline-none focus-within:ring-2 focus-within:ring-slate-500"
         >
-          <div
+          <!-- <div
             class="flex items-center justify-center px-3 bg-slate-100 border-r font-bold text-[0.8125rem] border-slate-900"
           >
             ${this.icon}
-          </div>
+          </div> -->
           <input
             type="text"
             @change=${this.handleChange}
             .value=${this.value ?? ""}
-            class="px-3 py-2 focus:ring-0 bg-transparent border-none text-[0.8125rem] focus:outline-none w-full"
+            class="px-3 py-2 focus:ring-0 bg-transparent border-none text-base focus:outline-none w-full"
           />
         </div>
       </div>
-      ${this.schema.pattern
-        ? html`<span class="text-sm block truncate pt-1 text-slate-500"
-            >${this.schema.pattern}</span
-          >`
-        : ""}
-     
     `;
   }
 }
 
+// <!-- ${this.schema.pattern
+//   ? html`<span class="text-sm block truncate pt-1 text-slate-500"
+//       >${this.schema.pattern}</span
+//     >`
+//   : ""} -->
 // ${errors
 //   ? (errors ?? []).map(
 //       (error: any) => html`<span class="text-sm block pt-1 text-red-500"
