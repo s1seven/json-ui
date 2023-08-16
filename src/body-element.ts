@@ -214,8 +214,8 @@ export class BodyElement extends LitElement {
               path: propsUntilComplexType[firstInvalidComplexType.index][0],
             },
           !isEmpty(ajv.errors) && {
-            label: ajv!.errors![0].message ?? ""
-          }]
+            label: ajv!.errors![0].message ?? "",
+          }
         )
       : [];
 

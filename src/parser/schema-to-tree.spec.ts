@@ -1,11 +1,16 @@
-import { JSONSchema7 } from "json-schema";
-import { schemaToTree } from "./schema-to-tree";
+import { schemaToTree2 } from "./schema-to-tree";
 import coaSchema from "../../fixtures/coa-schema.json";
+import { resolveRefs } from "./resolve-refs";
+import { JSONSchema7 } from "json-schema";
+import { allOf } from "./all-of";
 
 test("schema to tree", async () => {
-  const schemas = coaSchema;
+  const schema = allOf(resolveRefs(coaSchema as any as JSONSchema7));
 
-  const tree = schemaToTree(schemas);
+  console.log("my schema", schema);
+
+  const tree = schemaToTree2(schema);
+  console.log("my tree", tree);
   expect(tree).toMatchSnapshot();
 });
 
