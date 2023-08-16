@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`simple tree overlap 1`] = `
+[
+  "",
+  true,
+  [
+    [
+      "brand",
+      true,
+      [],
+    ],
+    [
+      "model",
+      true,
+      [],
+    ],
+  ],
+]
+`;

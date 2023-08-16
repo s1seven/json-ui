@@ -2,7 +2,6 @@ import { JSONSchema7 } from "json-schema";
 import { PATH_SEPARATOR, PATH_UP } from "../constants";
 import { inferType } from "../parser/infer";
 import {
-  concat,
   dropRight,
   filter,
   flatMap,
