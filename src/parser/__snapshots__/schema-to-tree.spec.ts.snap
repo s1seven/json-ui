@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`schema to tree 1`] = `
+[
+  "id",
+  [],
+  "name",
+  [],
+  "age",
+  [],
+  "email",
+  [],
+  "address",
+  [
+    "street",
+    [],
+    "city",
+    [],
+    "zipcode",
+    [],
+  ],
+]
+`;
