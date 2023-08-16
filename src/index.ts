@@ -8,3 +8,4 @@ export { StringElement } from "./ui/string-element";
 export { SingleDropdownElement } from "./ui/single-dropdown-element";
 export { NumberElement } from "./ui/number-element";
 export { ButtonElement } from "./ui/button-element";
+export { schemaToTree } from "./parser/schema-to-tree";
