@@ -10,7 +10,13 @@
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./src",
-
+    "baseUrl": "./src",
+    "paths": {
+      "@json-ui/utils": ["utils/index.ts"],
+      "@json-ui/parser": ["parser/index.ts"],
+      "@json-ui/ui": ["ui/index.ts"],
+      "@json-ui/core": ["index.ts"],
+    },
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
