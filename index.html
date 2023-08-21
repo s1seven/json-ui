@@ -13,7 +13,74 @@
         const el = document.createElement("json-ui-element");
 
         Object.assign(el, {
-          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          schema: {
+            $schema: "http://json-schema.org/draft-07/schema#",
+            title: "Banana Yoghurt Survey",
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              personalInfo: {
+                type: "object",
+                title: "Personal Information",
+                properties: {
+                  name: {
+                    type: "string",
+                    title: "Full Name",
+                  },
+                  age: {
+                    type: "integer",
+                    title: "Age",
+                    minimum: 0,
+                  },
+                  gender: {
+                    type: "string",
+                    title: "Gender",
+                    enum: ["Male", "Female", "Other", "Prefer not to say"],
+                  },
+                },
+                required: ["name", "age", "gender"],
+              },
+              yoghurtExperience: {
+                type: "object",
+                title: "Banana Yoghurt Experience",
+                properties: {
+                  taste: {
+                    type: "string",
+                    title: "How do you find the taste of banana yoghurt?",
+                    enum: ["Delicious", "Good", "Average", "Bad", "Horrible"],
+                  },
+                  purchaseFrequency: {
+                    type: "string",
+                    title: "How often do you buy banana yoghurt?",
+                    enum: ["Daily", "Weekly", "Monthly", "Rarely", "Never"],
+                  },
+                  improvements: {
+                    type: "array",
+                    title: "What improvements would you suggest?",
+                    items: {
+                      type: "string",
+                      enum: [
+                        "More banana flavor",
+                        "Less sweet",
+                        "Creamier texture",
+                        "Better packaging",
+                        "Lower price",
+                      ],
+                    },
+                    uniqueItems: true,
+                  },
+                  alternativeFlavors: {
+                    type: "boolean",
+                    title:
+                      "Would you be interested in other fruit flavors of yoghurt?",
+                  },
+                },
+                required: ["taste", "purchaseFrequency"],
+              },
+            },
+            required: ["personalInfo", "yoghurtExperience"],
+          },
+          // schema: await (await fetch("./fixtures/coa-schema.json")).json(),
           // schema: {
           //   properties: {
           //     name: {
@@ -44,7 +111,7 @@
           //     },
           //   },
           // },
-          path: location.hash.replace(/\//i, '').replaceAll("/", ".").slice(1),
+          path: location.hash.replace(/\//i, "").replaceAll("/", ".").slice(1),
           // value: {
           //   firstName: "Jane",
           //   lastName: "Doe",
@@ -82,14 +149,17 @@
         });
 
         el.addEventListener("navigate", (e) => {
-          location.hash = '/' + e.detail.replaceAll(".", "/");
+          location.hash = "/" + e.detail.replaceAll(".", "/");
         });
 
         document.querySelector("#host").appendChild(el);
       });
     </script>
   </head>
-  <body>
-    <div id="host" class="mx-auto my-16 max-w-xl p-4"></div>
+  <body class="bg-slate-100">
+    <div
+      id="host"
+      class="mx-auto my-16 max-w-xl p-8 shadow-2xl rounded-2xl bg-white"
+    ></div>
   </body>
 </html>

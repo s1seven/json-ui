@@ -96,7 +96,6 @@ export class BodyElement extends LitElement {
           ["array", () => this.renderArray()],
           ["string", () => this.renderPrimitive("string")],
           ["number", () => this.renderPrimitive("number")],
-          ["enum", () => this.renderPrimitive("enum")],
           ["boolean", () => this.renderPrimitive("boolean")],
         ],
         () => html`Unknown type <strong>${type}</strong>.`
@@ -121,50 +120,60 @@ export class BodyElement extends LitElement {
   ) {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
     const schema = navigateSchema(this.schema!, key);
+    const title = schema?.title ?? key;
 
     return html`<label id="#${key}" class="flex flex-col gap-2 w-full">
-      ${when(!skipHeader && key, () =>
-        renderLabel(String(key), this.required.includes(String(key)))
+      ${when(!skipHeader && title, () =>
+        renderLabel(String(title), this.required.includes(String(key)))
       )}
-      ${choose(type, [
-        [
-          "string",
-          () => html`<string-element
+      ${when(
+        schema?.enum,
+        () => {
+          const enumOptions = ((schema?.enum as any[]) ?? []).map((item) =>
+            String(item)
+          );
+          return html`<single-dropdown-element
             @change=${dispatchChange(this, String(key ?? ""))}
+            .options=${enumOptions}
             .value=${value}
-            .schema=${schema}
-          ></string-element>`,
-        ],
-        [
-          "number",
-          () => html`<number-element
-            @change=${dispatchChange(this, String(key ?? ""))}
-            .value=${value}
-            .schema=${schema}
-          ></number-element>`,
-        ],
-        [
-          "enum",
-          () => {
-            const enumOptions = ((schema?.enum as any[]) ?? []).map((item) =>
-              String(item)
-            );
-            return html`<single-dropdown-element
-              @change=${dispatchChange(this, String(key ?? ""))}
-              .options=${enumOptions}
-              .value=${value}
-            ></single-dropdown-element>`;
-          },
-        ],
-        [
-          "boolean",
-          () => html`<checkbox-element
-            @change=${dispatchChange(this, String(key ?? ""))}
-            .value=${value}
-            .label=${humanizeKey(String(key))}
-          ></checkbox-element>`,
-        ],
-      ])}
+          ></single-dropdown-element>`;
+        },
+        () =>
+          choose(type, [
+            [
+              "string",
+              () => html`<string-element
+                @change=${dispatchChange(this, String(key ?? ""))}
+                .value=${value}
+                .schema=${schema}
+              ></string-element>`,
+            ],
+            [
+              "number",
+              () => html`<number-element
+                @change=${dispatchChange(this, String(key ?? ""))}
+                .value=${value}
+                .schema=${schema}
+              ></number-element>`,
+            ],
+            [
+              "integer",
+              () => html`<number-element
+                @change=${dispatchChange(this, String(key ?? ""))}
+                .value=${value}
+                .schema=${schema}
+              ></number-element>`,
+            ],
+            [
+              "boolean",
+              () => html`<checkbox-element
+                @change=${dispatchChange(this, String(key ?? ""))}
+                .value=${value}
+                .label=${humanizeKey(String(key))}
+              ></checkbox-element>`,
+            ],
+          ])
+      )}
     </label>`;
   }
 
@@ -229,8 +238,8 @@ export class BodyElement extends LitElement {
             [
               ["string", () => this.renderPrimitive("string", key)],
               ["number", () => this.renderPrimitive("number", key)],
-              ["enum", () => this.renderPrimitive("enum", key)],
-              ["boolean", () => this.renderPrimitive("boolean", key, true)],
+              ["integer", () => this.renderPrimitive("integer", key)],
+              ["boolean", () => this.renderPrimitive("boolean", key, false)],
             ],
             () => this.renderValuePreview(key, value, false)
           );
@@ -375,7 +384,7 @@ export class BodyElement extends LitElement {
                 [
                   ["string", () => this.renderPrimitive("string", idx, true)],
                   ["number", () => this.renderPrimitive("number", idx, true)],
-                  ["enum", () => this.renderPrimitive("enum", idx, true)],
+                  ["integer", () => this.renderPrimitive("integer", idx, true)],
                 ],
                 () => this.renderValuePreview(idx.toString(), value, true, true)
               )}
@@ -441,7 +450,7 @@ export class BodyElement extends LitElement {
       key?: string;
     }[];
     return when(
-      applicableErrors.length,
+      applicableErrors.length && false,
       () => html`
         <div class="border-red-500 border-l-4 px-4 mb-8 text-slate-800">
           <h3 class="text-2xl font-bold mb-3">Check the form</h3>

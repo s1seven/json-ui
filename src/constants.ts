@@ -21,13 +21,11 @@ export const ALL_TYPES: (JSONSchema7TypeName | "enum" | undefined)[] = [
   "array",
   "object",
   "null",
-  "enum",
 ];
 
 export const PRIMITIVE_TYPES: Partial<typeof ALL_TYPES> = [
   "string",
   "number",
-  "enum",
   "boolean",
 ];
 
