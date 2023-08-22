@@ -1,6 +1,6 @@
 export { allOf } from "./all-of";
 export { resolveRefs } from "./resolve-refs";
-export { schemaToTree } from "./schema-to-tree";
+export { schemaToTree, type Tree } from "./schema-to-tree";
 export { ajvFactory } from "./ajv";
 export { getAnyOfVal } from "./any-of";
 export { anyOf } from "./any-of";
