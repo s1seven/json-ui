@@ -29,6 +29,7 @@ import { ValidateFunction } from "ajv";
 import { icons } from "./ui";
 import { highlightPath } from ".";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { when } from "lit/directives/when.js";
 
 @customElement("json-ui-element")
 export class JsonUiElement extends LitElement {
@@ -213,29 +214,32 @@ export class JsonUiElement extends LitElement {
         <div class="w-full max-w-2xl">
           <div class="grid grid-cols-1 gap-8 flex-1">
             ${this.renderHeader()}
-            ${navigated.oneOf &&
-            html`<one-of-element
-              @change=${(ev: CustomEvent<number>) =>
-                (this.oneOfIndex = ev.detail)}
-              .schema=${navigated}
-              .value=${this.oneOfIndex}
-            ></one-of-element>`}
-            ${resolvedOneOf.anyOf &&
-            html`<any-of-element
-              @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
-                (this.anyOfIndices = ev.detail.value)}
-              .schema=${navigated}
-              .value=${this.anyOfIndices}
-            ></any-of-element>`}
-
-            <body-element
-              @change=${this.handleChange}
-              @navigate=${(ev: CustomEvent<string>) =>
-                (this.path = joinPaths(this.path, ...ev.detail))}
-              .schema=${resolvedAnyOf}
-              .value=${this.resolvedValue}
-              .path=${this.path}
-            ></body-element>
+            ${when(
+              navigated.oneOf && this.oneOfIndex === -1,
+              () => html`<one-of-element
+                @change=${(ev: CustomEvent<number>) =>
+                  (this.oneOfIndex = ev.detail)}
+                .schema=${navigated}
+                .value=${this.oneOfIndex}
+              ></one-of-element>`,
+              () => html`
+                ${resolvedOneOf.anyOf &&
+                html`<any-of-element
+                  @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
+                    (this.anyOfIndices = ev.detail.value)}
+                  .schema=${navigated}
+                  .value=${this.anyOfIndices}
+                ></any-of-element>`}
+                <body-element
+                  @change=${this.handleChange}
+                  @navigate=${(ev: CustomEvent<string>) =>
+                    (this.path = joinPaths(this.path, ...ev.detail))}
+                  .schema=${resolvedAnyOf}
+                  .value=${this.resolvedValue}
+                  .path=${this.path}
+                ></body-element>
+              `
+            )}
           </div>
         </div>
         <div>

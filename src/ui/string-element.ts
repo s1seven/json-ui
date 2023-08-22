@@ -93,7 +93,6 @@ export class StringElement extends LitElement {
   }
 
   render() {
-    // const errors = this.validate();
     return html`
       <div
         class="relative pointer-events-auto w-full text-slate-800 select-none"
@@ -117,6 +116,7 @@ export class StringElement extends LitElement {
             () => html`<button-element
               class="pr-2"
               size="xs"
+              emphasis="low"
               .icon=${icons.CLOSE()}
               @click=${() => this.clearValue()}
             ></button-element>`

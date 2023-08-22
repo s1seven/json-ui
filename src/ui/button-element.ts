@@ -2,9 +2,8 @@ import { LitElement, css, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import styles from "../index.css?inline";
 import { Icon } from "./icons";
-import { when } from "lit/directives/when.js";
 
-export type ButtonEmphasis = "high" | "medium";
+export type ButtonEmphasis = "high" | "medium" | "low";
 
 /**
  * Button element.
@@ -55,6 +54,7 @@ export class ButtonElement extends LitElement {
           medium:
             "bg-transparent text-slate-900 font-semibold border border-slate-600 hover:bg-stone-100 focus:ring-stone-500",
           high: "bg-green-600 text-white font-semibold shadow-sm hover:bg-green-700 focus:ring-green-600",
+          low: "bg-transparent text-slate-900 font-semibold hover:bg-slate-200 focus:ring-slate-600",
         }[this.emphasis],
         {
           normal: "",

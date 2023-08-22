@@ -319,10 +319,12 @@ export class BodyElement extends LitElement {
           isUndefined(value) && !skipCta && required,
           () => html` <button-element
             @click=${() => this.navigate(key)}
-            .icon=${icons.ARROW_RIGHT()}
             emphasis="high"
             size="s"
-            >Continue with ${humanizeKey(key)}</button-element
+          >
+            <!-- .icon=${icons.ARROW_RIGHT()} -->
+            <!-- Continue with ${humanizeKey(key)} -->
+            Continue</button-element
           >`,
           () => html`
             <div class="flex gap-2">
