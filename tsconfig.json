@@ -12,10 +12,10 @@
     "rootDir": "./src",
     "baseUrl": "./src",
     "paths": {
-      "@json-ui/utils": ["utils/index.ts"],
-      "@json-ui/parser": ["parser/index.ts"],
-      "@json-ui/ui": ["ui/index.ts"],
-      "@json-ui/core": ["index.ts"],
+      "@s1seven/json-ui/utils": ["utils/index.ts"],
+      "@s1seven/json-ui/parser": ["parser/index.ts"],
+      "@s1seven/json-ui/ui": ["ui/index.ts"],
+      "@s1seven/json-ui/core": ["index.ts"],
     },
     /* Bundler mode */
     "moduleResolution": "bundler",

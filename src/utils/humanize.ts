@@ -43,8 +43,9 @@ export const humanizeValue = (
   value: any
 ): [title: string, preview?: string][] =>
   isObject(value) && !isStringArray(value)
-    ? map(value, (v, k) => [k, humanizeToString(v)])
-    : [[humanizeToString(value)]];
+    ? [[map(value, (v, k) => humanizeToString(v)).join(", ")]]
+    : // ? map(value, (v, k) => [k, humanizeToString(v)])
+      [[humanizeToString(value)]];
 
 export const humanizeToString = (value: any): string =>
   isNull(value) || isUndefined(value)

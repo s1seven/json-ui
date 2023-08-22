@@ -4,4 +4,5 @@ export { StringElement } from "./string-element";
 export { SingleDropdownElement } from "./single-dropdown-element";
 export { NumberElement } from "./number-element";
 export { ButtonElement } from "./button-element";
+export { TreeElement } from "./tree-element";
 export { icons } from "./icons";

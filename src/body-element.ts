@@ -2,6 +2,7 @@ import {
   LitElement,
   PropertyValueMap,
   TemplateResult,
+  css,
   html,
   nothing,
   unsafeCSS,
@@ -37,7 +38,16 @@ import { ajvFactory } from "./parser/ajv";
 
 @customElement("body-element")
 export class BodyElement extends LitElement {
-  static readonly styles = unsafeCSS(styles);
+  static readonly styles = [
+    unsafeCSS(styles),
+    css`
+      :host label.error {
+        /* background: red; */
+        outline: 4px solid red;
+        outline-offset: 1rem;
+      }
+    `,
+  ];
 
   @property({ type: Object })
   schema?: JSONSchema7;
@@ -73,6 +83,7 @@ export class BodyElement extends LitElement {
     );
 
   render() {
+    console.debug(`[DEBUG] Rendering body.`);
     if (!this.schema) return html`<div>no schema</div>`;
     const type = inferType(this.schema!, this.value);
     return html`
@@ -100,8 +111,8 @@ export class BodyElement extends LitElement {
         ],
         () => html`Unknown type <strong>${type}</strong>.`
       )}
-      <div class="h-8"></div>
-      ${when(type !== "object", () => this.renderBackButton())}
+      <!-- <div class="h-8"></div>
+      ${when(type !== "object", () => this.renderBackButton())} -->
     `;
   }
 
@@ -121,10 +132,15 @@ export class BodyElement extends LitElement {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
     const schema = navigateSchema(this.schema!, key);
     const title = schema?.title ?? key;
+    const description = schema?.description;
 
-    return html`<label id="#${key}" class="flex flex-col gap-2 w-full">
+    return html`<label id="#${key}" class="flex flex-col gap-4 w-full">
       ${when(!skipHeader && title, () =>
-        renderLabel(String(title), this.required.includes(String(key)))
+        renderLabel(
+          String(title),
+          description,
+          this.required.includes(String(key))
+        )
       )}
       ${when(
         schema?.enum,
@@ -178,10 +194,12 @@ export class BodyElement extends LitElement {
   }
 
   private firstInvalidComplexType = (
-    properties: [key: string, type: (typeof ALL_TYPES)[number]][]
+    properties: [key: string, type: (typeof ALL_TYPES)[number]][],
+    required?: string[]
   ): { index: number; errors: any[] } | undefined => {
     for (let i = 0; i < properties.length; ++i) {
       const [key, type] = properties[i];
+      if (required && !required.includes(key)) continue;
       if (PRIMITIVE_TYPES.includes(type)) continue;
       const ajv = ajvFactory().compile(
         navigateSchema(this.schema!, key) as JSONSchema7
@@ -203,7 +221,7 @@ export class BodyElement extends LitElement {
     validate = true
   ): TemplateResult => {
     const firstInvalidComplexType = enforceUserFlow
-      ? this.firstInvalidComplexType(properties)
+      ? this.firstInvalidComplexType(properties, this.required)
       : void 0;
 
     const propsUntilComplexType = !firstInvalidComplexType
@@ -212,8 +230,6 @@ export class BodyElement extends LitElement {
 
     const ajv = ajvFactory().compile(this.schema!);
     ajv(this.value);
-
-    console.log(firstInvalidComplexType?.errors);
 
     const errors = validate
       ? this.renderErrors(
@@ -229,7 +245,7 @@ export class BodyElement extends LitElement {
       : [];
 
     return html`
-      <div class="flex flex-col gap-8 items-start">
+      <div class="flex flex-col gap-16 items-start">
         ${errors}
         ${propsUntilComplexType.map(([key, type]) => {
           const value = this.value?.[key];
@@ -244,10 +260,12 @@ export class BodyElement extends LitElement {
             () => this.renderValuePreview(key, value, false)
           );
         })}
-        ${when(!skipAdditionalProperties, () =>
+        <!-- ${when(!skipAdditionalProperties, () =>
           this.renderAdditionalProperties()
-        )}
-        ${when(!skipBackButton, () => this.renderBackButton("medium", true))}
+        )} -->
+        <!-- ${when(!skipBackButton, () =>
+          this.renderBackButton("medium", true)
+        )} -->
       </div>
     `;
   };
@@ -283,14 +301,22 @@ export class BodyElement extends LitElement {
     const schema = navigateSchema(this.schema!, key) as JSONSchema7;
     const compiled = ajv.compile(schema);
     const valid = compiled(value);
+    const description = schema?.description;
+    const required = this.required.includes(String(key));
 
     return html`
-      <label id="#${key}" class="flex flex-col gap-2 w-full items-start">
+      <label
+        id="#${key}"
+        class="flex flex-col gap-4 w-full items-start ${when(
+          !isUndefined(value) && !valid,
+          () => "error"
+        )}"
+      >
         ${when(!skipHeader && key, () =>
-          renderLabel(String(key), this.required.includes(String(key)))
+          renderLabel(String(key), description, required)
         )}
         ${when(
-          isUndefined(value) && !skipCta,
+          isUndefined(value) && !skipCta && required,
           () => html` <button-element
             @click=${() => this.navigate(key)}
             .icon=${icons.ARROW_RIGHT()}
@@ -299,23 +325,40 @@ export class BodyElement extends LitElement {
             >Continue with ${humanizeKey(key)}</button-element
           >`,
           () => html`
-            <button-element
-              class="w-full"
-              @click=${() => this.navigate(key)}
-              .state=${valid ? "normal" : "error"}
-              .iconLeft=${valid ? icons.DONE() : icons.ERROR()}
-              .icon=${icons.CHEVRON_RIGHT()}
-            >
-              <div class="flex flex-col items-start justify-between gap-0 py-2">
+            <div class="flex gap-2">
+              <button-element
+                class="w-full"
+                @click=${() => this.navigate(key)}
+                .state=${valid ? "normal" : "error"}
+                .iconLeft=${valid ? void 0 : icons.ERROR()}
+                .icon=${icons.CHEVRON_RIGHT()}
+              >
                 ${humanizeValue(value).map(
-                  ([title, preview]) =>
+                  ([title]) =>
                     html`<div class="flex gap-2">
-                      <strong>${title}</strong
-                      ><span class="text-slate-500">${preview}</span>
+                      <span class="text-slate-800 text-left font-medium"
+                        >${title}</span
+                      >
                     </div>`
                 )}
-              </div>
-            </button-element>
+              </button-element>
+
+              ${when(
+                !isUndefined(value),
+                () => html`<button-element
+                  .icon=${icons.REMOVE()}
+                  @click="${() =>
+                    this.dispatchEvent(
+                      new CustomEvent<ChangeEventDetails>("change", {
+                        detail: {
+                          value: void 0,
+                          path: key,
+                        },
+                      })
+                    )}"
+                ></button-element>`
+              )}
+            </div>
           `
         )}
       </label>
@@ -507,9 +550,16 @@ export class BodyElement extends LitElement {
 
 export const renderLabel = (
   key: string,
+  description?: string,
   required?: boolean
 ): TemplateResult<1> =>
-  html`<div class="text-xl font-medium">
-    ${humanizeKey(key)}
-    ${required ? "*" : html`<span class="text-slate-500">optional</span>`}
+  html`<div>
+    <h2 class="text-2xl font-medium">
+      ${humanizeKey(key)}
+      ${required ? "*" : html`<span class="text-slate-500">optional</span>`}
+    </h2>
+    ${when(
+      description,
+      () => html`<p class="text-slate-800">${description}</p>`
+    )}
   </div>`;

@@ -5,142 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JSON Editor</title>
     <link rel="stylesheet" href="./src/index.css" />
-    <script type="module" src="/src/index.ts"></script>
 
-    <script>
+    <script type="module">
+      import { patchValue } from "/src/index.ts";
+
       window.addEventListener("load", async () => {
         const jsonUIElement = document.querySelector("json-ui-element");
         const el = document.createElement("json-ui-element");
+        const presetBtn = document.createElement("button-element");
+        presetBtn.innerHTML = "Apply Preset";
 
         Object.assign(el, {
-          schema: {
-            $schema: "http://json-schema.org/draft-07/schema#",
-            title: "Banana Yoghurt Survey",
-            type: "object",
-            additionalProperties: false,
-            properties: {
-              personalInfo: {
-                type: "object",
-                title: "Personal Information",
-                properties: {
-                  name: {
-                    type: "string",
-                    title: "Full Name",
-                  },
-                  age: {
-                    type: "integer",
-                    title: "Age",
-                    minimum: 0,
-                  },
-                  gender: {
-                    type: "string",
-                    title: "Gender",
-                    enum: ["Male", "Female", "Other", "Prefer not to say"],
-                  },
-                },
-                required: ["name", "age", "gender"],
-              },
-              yoghurtExperience: {
-                type: "object",
-                title: "Banana Yoghurt Experience",
-                properties: {
-                  taste: {
-                    type: "string",
-                    title: "How do you find the taste of banana yoghurt?",
-                    enum: ["Delicious", "Good", "Average", "Bad", "Horrible"],
-                  },
-                  purchaseFrequency: {
-                    type: "string",
-                    title: "How often do you buy banana yoghurt?",
-                    enum: ["Daily", "Weekly", "Monthly", "Rarely", "Never"],
-                  },
-                  improvements: {
-                    type: "array",
-                    title: "What improvements would you suggest?",
-                    items: {
-                      type: "string",
-                      enum: [
-                        "More banana flavor",
-                        "Less sweet",
-                        "Creamier texture",
-                        "Better packaging",
-                        "Lower price",
-                      ],
-                    },
-                    uniqueItems: true,
-                  },
-                  alternativeFlavors: {
-                    type: "boolean",
-                    title:
-                      "Would you be interested in other fruit flavors of yoghurt?",
-                  },
-                },
-                required: ["taste", "purchaseFrequency"],
-              },
-            },
-            required: ["personalInfo", "yoghurtExperience"],
-          },
-          // schema: await (await fetch("./fixtures/coa-schema.json")).json(),
-          // schema: {
-          //   properties: {
-          //     name: {
-          //       type: "string",
-          //     },
-          //     age: {
-          //       type: "number",
-          //     },
-          //     address: {
-          //       type: "object",
-          //       properties: {
-          //         street: {
-          //           type: "string",
-          //         },
-          //         city: {
-          //           type: "string",
-          //         },
-          //         state: {
-          //           type: "string",
-          //         },
-          //         zip: {
-          //           type: "string",
-          //         },
-          //       },
-          //     },
-          //     uni: {
-          //       enum: ["UNIVIE", "TU MÜNCHEN", "ETH ZÜRICH"],
-          //     },
-          //   },
-          // },
-          path: location.hash.replace(/\//i, "").replaceAll("/", ".").slice(1),
-          // value: {
-          //   firstName: "Jane",
-          //   lastName: "Doe",
-          //   dateOfBirth: "2000-05-15",
-          //   studentID: "S123456",
-          //   address: {
-          //     street: "123 Elm St.",
-          //     city: "Anytown",
-          //     state: "CA",
-          //     postalCode: "12345",
-          //   },
-          //   contact: {
-          //     email: "jane.doe@example.com",
-          //     phone: "555-123-4567",
-          //   },
-          //   coursesEnrolled: [
-          //     {
-          //       courseID: "ENG101",
-          //       courseName: "Introduction to English",
-          //       grade: "A",
-          //     },
-          //     {
-          //       courseID: "MTH101",
-          //       courseName: "Introduction to Mathematics",
-          //       grade: "B+",
-          //     },
-          //   ],
-          //   gpa: 3.85,
-          // },
+          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          path: location.hash.replace(/#/i, ""),
           value: JSON.parse(localStorage.getItem("JSON_UI_VALUE")),
         });
 
@@ -149,17 +26,26 @@
         });
 
         el.addEventListener("navigate", (e) => {
-          location.hash = "/" + e.detail.replaceAll(".", "/");
+          location.hash = e.detail.replaceAll(".", "/");
         });
 
+        presetBtn.addEventListener("click", () => {
+          el.value = patchValue(el.value, "Certificate.CertificateLanguages", [
+            "EN",
+            "FR",
+          ]);
+        });
+
+        document.querySelector("#actions").appendChild(presetBtn);
         document.querySelector("#host").appendChild(el);
       });
     </script>
   </head>
   <body class="bg-slate-100">
+    <div id="actions" class="mx-auto mt-4 mb-2 max-w-4xl p-8"></div>
     <div
       id="host"
-      class="mx-auto my-16 max-w-xl p-8 shadow-2xl rounded-2xl bg-white"
+      class="mx-auto mb-16 max-w-4xl p-8 shadow-2xl rounded-2xl bg-white"
     ></div>
   </body>
 </html>

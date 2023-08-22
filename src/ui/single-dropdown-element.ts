@@ -63,7 +63,7 @@ export class SingleDropdownElement extends LitElement {
   render() {
     return html`
       <div
-        class="relative pointer-events-auto w-full text-[0.8125rem] leading-5 text-slate-700 select-none ${this
+        class="relative pointer-events-auto w-full text-[0.8125rem] leading-5 text-slate-800 select-none ${this
           .show
           ? "z-10"
           : ""}"

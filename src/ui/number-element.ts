@@ -91,7 +91,7 @@ export class NumberElement extends LitElement {
     // const errors = this.validate();
     return html`
       <div
-        class="relative pointer-events-auto w-full text-slate-700 select-none"
+        class="relative pointer-events-auto w-full text-slate-800 select-none"
       >
         <div
           class="flex rounded-sm overflow-hidden bg-white shadow-sm ring-2 border-none ring-slate-900 cursor-text focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500"
@@ -104,7 +104,7 @@ export class NumberElement extends LitElement {
           <input
             type="number"
             @change=${this.handleChange}
-            .value=${this.value}
+            .value=${String(this.value)}
             class="px-3 py-2 focus:ring-0 bg-transparent border-none text-[0.8125rem] focus:outline-none w-full"
           />
         </div>

@@ -1,4 +1,11 @@
-import { LitElement, PropertyValueMap, html, nothing, unsafeCSS } from "lit";
+import {
+  LitElement,
+  PropertyValueMap,
+  css,
+  html,
+  nothing,
+  unsafeCSS,
+} from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { resolveRefs } from "./parser/resolve-refs";
@@ -7,17 +14,38 @@ import { JSONSchema7 } from "json-schema";
 import { joinPaths, navigateSchema } from "./utils/path";
 import { inferOneOfOption, oneOf } from "./parser/one-of";
 import { anyOf, inferAnyOfOptions } from "./parser/any-of";
-import { get, isEmpty, isNull, isUndefined, set } from "lodash";
+import { clone, get, isEmpty, isNull, isUndefined, set } from "lodash";
 import { inferDescription, inferTitle, inferType } from "./parser/infer";
-import { ROOT_PATH, DEFAULT_VALUES, PATH_SEPARATOR } from "./constants";
+import {
+  ROOT_PATH,
+  DEFAULT_VALUES,
+  PATH_SEPARATOR,
+  PATH_UP,
+} from "./constants";
 import { ChangeEventDetails } from "./utils/dispatch-change";
 import { humanizeKey } from "./utils/humanize";
 import { ajvFactory } from "./parser/ajv";
 import { ValidateFunction } from "ajv";
+import { icons } from "./ui";
+import { highlightPath } from ".";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
 @customElement("json-ui-element")
 export class JsonUiElement extends LitElement {
-  static readonly styles = unsafeCSS(styles);
+  static readonly styles = [
+    unsafeCSS(styles),
+    css`
+      :host .panel {
+        transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 200ms cubic-bezier(0.4, 0, 0.2, 1) 60ms;
+      }
+      :host .json-ui-highlight {
+        font-weight: bold;
+        color: blue;
+        outline: 1px solid blue;
+      }
+    `,
+  ];
 
   @property({ type: Object })
   schema!: JSONSchema7;
@@ -59,8 +87,25 @@ export class JsonUiElement extends LitElement {
   ): void {
     this.resolvedSchemas ??= {} as any;
 
+    // Handle invalid root type.
+    const expectedRootType = inferType(this.schema, this.value);
+    if (expectedRootType === void 0)
+      throw new Error("Could not determine base schema type.");
+    if (
+      typeof this.value !== expectedRootType ||
+      isNull(this.value) ||
+      isUndefined(this.value)
+    ) {
+      this.value = DEFAULT_VALUES[expectedRootType]();
+      this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
+    } else if (changedProperties.has("value")) {
+      this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
+    }
+
     // Always resolve the value because nested values may have changed.
-    this.resolvedValue = this.path ? get(this.value, this.path) : this.value;
+    this.resolvedValue = clone(
+      this.path ? get(this.value, this.path) : this.value
+    );
 
     if (this.schema && this.ajvValidateFn) this.ajvValidateFn!(this.value);
 
@@ -74,7 +119,6 @@ export class JsonUiElement extends LitElement {
     ].findIndex((prop) => changedProperties.has(prop));
 
     if (updateLevel === -1) {
-      this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
       console.debug(`🛠️ [DEBUG] No schema update required.`, {
         changedProperties,
       });
@@ -103,9 +147,10 @@ export class JsonUiElement extends LitElement {
         this.value
       );
 
+      // Navigation failed.
       if (isUndefined(navigatedSchema)) {
         this.path = ROOT_PATH;
-        this.resolvedValue = get(this.value, this.path);
+        this.resolvedValue = clone(get(this.value, this.path));
         this.resolvedSchemas.navigated = this.resolvedSchemas.resolvedAllOf;
       } else {
         this.resolvedSchemas.navigated = navigatedSchema;
@@ -140,51 +185,81 @@ export class JsonUiElement extends LitElement {
 
   private handleChange(ev: CustomEvent<any>) {
     const resolvedPath = joinPaths(this.path, ev.detail.path);
-    const expectedRootType = inferType(this.schema, this.value);
-    if (expectedRootType === void 0)
-      throw new Error("Could not determine base schema type.");
-    if (
-      typeof this.value !== expectedRootType ||
-      isNull(this.value) ||
-      isUndefined(this.value)
-    )
-      this.value = DEFAULT_VALUES[expectedRootType]();
 
-    set(this.value, resolvedPath, ev.detail.value);
-    this.requestUpdate();
+    // Make sure the value gets a new reference so willUpdate runs.
+    const newValue = clone(this.value);
+    set(newValue, resolvedPath, ev.detail.value);
+    this.value = newValue;
+    this.resolvedValue = clone(get(this.value, this.path));
+  }
+
+  private toggleSidebar() {
+    const sidebar = this.shadowRoot?.getElementById("sidebar")!;
+    sidebar.hasAttribute("data-show")
+      ? sidebar.removeAttribute("data-show")
+      : sidebar.setAttribute("data-show", "");
   }
 
   render() {
-    console.debug(`🧠 [DEBUG] Rendering JSON UI.`, this.resolvedSchemas);
+    console.debug(
+      `🧠 [DEBUG] Rendering JSON UI.`,
+      this.resolvedSchemas,
+      this.resolvedValue
+    );
     const { resolvedAnyOf, navigated, resolvedOneOf } = this.resolvedSchemas;
 
     return html`
-      <div class="grid grid-cols-1 gap-8">
-        ${this.renderHeader()}
-        ${navigated.oneOf &&
-        html`<one-of-element
-          @change=${(ev: CustomEvent<number>) => (this.oneOfIndex = ev.detail)}
-          .schema=${navigated}
-          .value=${this.oneOfIndex}
-        ></one-of-element>`}
-        ${resolvedOneOf.anyOf &&
-        html`<any-of-element
-          @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
-            (this.anyOfIndices = ev.detail.value)}
-          .schema=${navigated}
-          .value=${this.anyOfIndices}
-        ></any-of-element>`}
+      <div class="flex relative gap-0 items-stretch">
+        <div class="w-full max-w-2xl">
+          <div class="grid grid-cols-1 gap-8 flex-1">
+            ${this.renderHeader()}
+            ${navigated.oneOf &&
+            html`<one-of-element
+              @change=${(ev: CustomEvent<number>) =>
+                (this.oneOfIndex = ev.detail)}
+              .schema=${navigated}
+              .value=${this.oneOfIndex}
+            ></one-of-element>`}
+            ${resolvedOneOf.anyOf &&
+            html`<any-of-element
+              @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
+                (this.anyOfIndices = ev.detail.value)}
+              .schema=${navigated}
+              .value=${this.anyOfIndices}
+            ></any-of-element>`}
 
-        <body-element
-          @change=${this.handleChange}
-          @navigate=${(ev: CustomEvent<string>) =>
-            (this.path = joinPaths(this.path, ...ev.detail))}
-          .schema=${resolvedAnyOf}
-          .value=${this.resolvedValue}
-          .path=${this.path}
-        ></body-element>
-
-        ${this.renderNextButton()}
+            <body-element
+              @change=${this.handleChange}
+              @navigate=${(ev: CustomEvent<string>) =>
+                (this.path = joinPaths(this.path, ...ev.detail))}
+              .schema=${resolvedAnyOf}
+              .value=${this.resolvedValue}
+              .path=${this.path}
+            ></body-element>
+          </div>
+        </div>
+        <div>
+          <div
+            id="sidebar"
+            class="panel sticky top-4 opacity-0 w-0 overflow-hidden [&[data-show]]:opacity-100 [&[data-show]]:w-[16rem] flex-[0_0] flex justify-end"
+          >
+            <div class="right-0 flex-[0_0_16rem]">
+              <div
+                class="ml-4 border border-slate-400 rounded-sm p-4 box-border text-xs text-slate-800"
+              >
+                <pre><code class="break-all whitespace-pre-wrap">${unsafeHTML(
+                  highlightPath(this.value, this.path)
+                )}</code></pre>
+                <button-element
+                  class="mt-4"
+                  @click=${() => (this.value = void 0)}
+                  size="xs"
+                  >Clear</button-element
+                >
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -194,21 +269,29 @@ export class JsonUiElement extends LitElement {
     const title = inferTitle(schema, this.path);
     const description = inferDescription(schema);
 
-    const pathParts = this.path.split(PATH_SEPARATOR);
+    const pathParts = ["", ...this.path.split(PATH_SEPARATOR).filter(Boolean)];
     return html`
       <div class="flex flex-col gap-8">
         <div class="flex gap-2 items-center select-none text-slate-800">
           ${pathParts.map(
             (part, i, arr) =>
               html`<a
-                  class="cursor-pointer p-0.5 inline-block rounded-sm active:text-slate-500 underline underline-offset-4"
+                  class="cursor-pointer p-0.5 inline-block rounded-sm active:text-slate-500 hover:underline underline-offset-4"
                   @click=${() =>
-                    (this.path = pathParts
-                      .filter((_, k) => k <= i)
-                      .join(PATH_SEPARATOR))}
-                  >${part}</a
+                    (this.path = joinPaths(
+                      this.path,
+                      ...new Array(arr.length - i - 1).fill(PATH_UP)
+                    ))}
+                  >${part || "Root"}</a
                 >${i < arr.length - 1 ? html`›` : nothing}`
           )}
+          <span class="flex-1"></span>
+          <button-element
+            @click=${() => this.toggleSidebar()}
+            size="xs"
+            .project=${false}
+            .iconLeft=${icons.DATA()}
+          ></button-element>
         </div>
         <div class="flex flex-col gap-4">
           <h1 class="text-4xl font-bold">${humanizeKey(title)}</h1>
@@ -234,9 +317,4 @@ export class JsonUiElement extends LitElement {
   //     </div>
   //   `;
   // }
-
-  private renderNextButton() {
-    return nothing;
-    // return html` <button>HIII</button> `;
-  }
 }

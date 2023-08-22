@@ -11,3 +11,5 @@ export { popPath } from "./path";
 export { firstPathSegment } from "./path";
 export { lastPathSegment } from "./path";
 export { navigateSchema } from "./path";
+export { highlightPath } from "./highlight-path";
+export { patchValue } from "./patch-value";

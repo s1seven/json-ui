@@ -21,6 +21,9 @@ export class ButtonElement extends LitElement {
     `,
   ];
 
+  @property({ type: Boolean })
+  readonly project = true;
+
   @property({ type: Object })
   readonly icon?: Icon;
 
@@ -37,15 +40,17 @@ export class ButtonElement extends LitElement {
   readonly emphasis: ButtonEmphasis = "medium";
 
   @property({ type: String })
-  readonly size: "s" | "m" = "s";
+  readonly size: "xs" | "s" | "m" = "s";
 
   render() {
     return html`<button
       class="${[
         "cursor-pointer select-none w-full inline-flex items-center gap-2 rounded-sm box-border align-middle focus:ring-2 focus:ring-offset-1 focus:outline-none active:translate-y-[1px] active:ring-0",
-        { s: "min-h-[40px] px-3 text-base", m: "min-h-[48px] px-4 text-lg" }[
-          this.size
-        ],
+        {
+          xs: "min-h-[32px] px-2 text-sm",
+          s: "min-h-[40px] px-3 text-base",
+          m: "min-h-[48px] px-4 text-lg",
+        }[this.size],
         {
           medium:
             "bg-transparent text-slate-900 font-semibold border border-slate-600 hover:bg-stone-100 focus:ring-stone-500",
@@ -59,7 +64,7 @@ export class ButtonElement extends LitElement {
     >
       ${this.iconLeft}
       <slot></slot>
-      ${when(this.icon, () => html`<span class="flex-1"></span>`)} ${this.icon}
+      ${this.icon}
     </button>`;
   }
 }
