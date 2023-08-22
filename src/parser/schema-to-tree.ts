@@ -7,7 +7,7 @@ export type Tree = (string | Tree)[];
 export const schemaToTree = (schema: JSONSchema7): Tree | undefined =>
   PRIMITIVE_TYPES.includes(inferType(schema))
     ? void 0
-    : Object.entries(schema.properties!).map(([k, value]) => {
+    : Object.entries(schema.properties ?? []).map(([k, value]) => {
         const children = schemaToTree(value as JSONSchema7);
         return children ? [k, children] : k;
       });
