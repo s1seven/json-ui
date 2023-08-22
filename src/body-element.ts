@@ -85,10 +85,10 @@ export class BodyElement extends LitElement {
   render() {
     console.debug(`[DEBUG] Rendering body.`);
     if (!this.schema) return html`<div>no schema</div>`;
-    const type = inferType(this.schema!, this.value);
+    const itemType = inferType(this.schema!, this.value);
     return html`
       ${choose(
-        type,
+        itemType,
         [
           [
             "object",
@@ -105,14 +105,16 @@ export class BodyElement extends LitElement {
               ),
           ],
           ["array", () => this.renderArray()],
-          ["string", () => this.renderPrimitive("string")],
-          ["number", () => this.renderPrimitive("number")],
-          ["boolean", () => this.renderPrimitive("boolean")],
         ],
-        () => html`Unknown type <strong>${type}</strong>.`
+        () =>
+          when(
+            PRIMITIVE_TYPES.includes(itemType),
+            () => this.renderPrimitive(itemType),
+            () => html`Unknown type <strong>${itemType}</strong>.`
+          )
       )}
       <!-- <div class="h-8"></div>
-      ${when(type !== "object", () => this.renderBackButton())} -->
+      ${when(itemType !== "object", () => this.renderBackButton())} -->
     `;
   }
 
@@ -247,17 +249,12 @@ export class BodyElement extends LitElement {
     return html`
       <div class="flex flex-col gap-16 items-start">
         ${errors}
-        ${propsUntilComplexType.map(([key, type]) => {
+        ${propsUntilComplexType.map(([key, itemType], idx) => {
           const value = this.value?.[key];
-          return choose(
-            type,
-            [
-              ["string", () => this.renderPrimitive("string", key)],
-              ["number", () => this.renderPrimitive("number", key)],
-              ["integer", () => this.renderPrimitive("integer", key)],
-              ["boolean", () => this.renderPrimitive("boolean", key, false)],
-            ],
-            () => this.renderValuePreview(key, value, false)
+          return when(
+            PRIMITIVE_TYPES.includes(itemType),
+            () => this.renderPrimitive(itemType, idx),
+            () => this.renderValuePreview(idx.toString(), value, false)
           );
         })}
         <!-- ${when(!skipAdditionalProperties, () =>
@@ -424,13 +421,9 @@ export class BodyElement extends LitElement {
         ${((this.value as any[]) ?? []).map(
           (value, idx) => html`<li class="ml-6 pl-4">
             <div class="flex gap-4 items-baseline">
-              ${choose(
-                itemType,
-                [
-                  ["string", () => this.renderPrimitive("string", idx, true)],
-                  ["number", () => this.renderPrimitive("number", idx, true)],
-                  ["integer", () => this.renderPrimitive("integer", idx, true)],
-                ],
+              ${when(
+                PRIMITIVE_TYPES.includes(itemType),
+                () => this.renderPrimitive(itemType, idx, true),
                 () => this.renderValuePreview(idx.toString(), value, true, true)
               )}
               <button-element
