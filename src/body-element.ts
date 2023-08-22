@@ -249,12 +249,12 @@ export class BodyElement extends LitElement {
     return html`
       <div class="flex flex-col gap-16 items-start">
         ${errors}
-        ${propsUntilComplexType.map(([key, itemType], idx) => {
+        ${propsUntilComplexType.map(([key, itemType]) => {
           const value = this.value?.[key];
           return when(
             PRIMITIVE_TYPES.includes(itemType),
-            () => this.renderPrimitive(itemType, idx),
-            () => this.renderValuePreview(idx.toString(), value, false)
+            () => this.renderPrimitive(itemType, key),
+            () => this.renderValuePreview(key, value, false)
           );
         })}
         <!-- ${when(!skipAdditionalProperties, () =>

@@ -211,7 +211,7 @@ export class JsonUiElement extends LitElement {
 
     return html`
       <div class="flex relative gap-0 items-stretch">
-        <div class="w-full max-w-2xl">
+        <div class="w-full">
           <div class="grid grid-cols-1 gap-8 flex-1">
             ${this.renderHeader()}
             ${when(
