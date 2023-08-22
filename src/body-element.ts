@@ -67,20 +67,20 @@ export class BodyElement extends LitElement {
     this.required = this.schema?.required ?? [];
   }
 
-  private renderBackButton = (
-    emphasis: ButtonEmphasis = "high",
-    hasArrow = true
-  ) =>
-    when(
-      this.path,
-      () => html`<button-element
-        @click=${() => this.navigate(PATH_UP)}
-        size="m"
-        .emphasis=${emphasis}
-        .iconLeft=${hasArrow ? icons.ARROW_LEFT() : void 0}
-        >Back</button-element
-      >`
-    );
+  // private renderBackButton = (
+  //   emphasis: ButtonEmphasis = "high",
+  //   hasArrow = true
+  // ) =>
+  //   when(
+  //     this.path,
+  //     () => html`<button-element
+  //       @click=${() => this.navigate(PATH_UP)}
+  //       size="m"
+  //       .emphasis=${emphasis}
+  //       .iconLeft=${hasArrow ? icons.ARROW_LEFT() : void 0}
+  //       >Back</button-element
+  //     >`
+  //   );
 
   render() {
     console.debug(`[DEBUG] Rendering body.`);
@@ -113,8 +113,17 @@ export class BodyElement extends LitElement {
             () => html`Unknown type <strong>${itemType}</strong>.`
           )
       )}
-      <!-- <div class="h-8"></div>
-      ${when(itemType !== "object", () => this.renderBackButton())} -->
+      <div class="h-8"></div>
+      ${when(
+        itemType !== "object",
+        () => html`<button-element
+          @click=${() => this.navigate(PATH_UP)}
+          emphasis="high"
+          size="s"
+        >
+          Continue</button-element
+        >`
+      )}
     `;
   }
 
@@ -260,9 +269,17 @@ export class BodyElement extends LitElement {
         <!-- ${when(!skipAdditionalProperties, () =>
           this.renderAdditionalProperties()
         )} -->
-        <!-- ${when(!skipBackButton, () =>
-          this.renderBackButton("medium", true)
-        )} -->
+        ${when(
+          !skipBackButton && !firstInvalidComplexType,
+          () =>
+            html`<button-element
+              @click=${() => this.navigate(PATH_UP)}
+              emphasis="high"
+              size="s"
+            >
+              Continue</button-element
+            >`
+        )}
       </div>
     `;
   };
@@ -319,8 +336,6 @@ export class BodyElement extends LitElement {
             emphasis="high"
             size="s"
           >
-            <!-- .icon=${icons.ARROW_RIGHT()} -->
-            <!-- Continue with ${humanizeKey(key)} -->
             Continue</button-element
           >`,
           () => html`
