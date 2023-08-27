@@ -24,17 +24,11 @@ import { ChangeEventDetails, dispatchChange } from "./utils/dispatch-change";
 import { humanizeKey, humanizeValue } from "./utils/humanize";
 import { choose } from "lit/directives/choose.js";
 import { when } from "lit/directives/when.js";
-import { get, isEmpty, isEqual, isUndefined, slice, uniq } from "lodash";
+import { isEmpty, isEqual, isUndefined, slice, uniq } from "lodash";
 import { PathSegment, navigateSchema } from "./utils/path";
 import { icons } from "./ui/icons";
-import { ButtonEmphasis } from "./ui/button-element";
 import { Falsy } from "./utils/falsy";
 import { ajvFactory } from "./parser/ajv";
-
-/**
- * The body represents the main content of the JSON UI.
- * It is either an object or an array.
- */
 
 @customElement("body-element")
 export class BodyElement extends LitElement {
@@ -42,7 +36,6 @@ export class BodyElement extends LitElement {
     unsafeCSS(styles),
     css`
       :host label.error {
-        /* background: red; */
         outline: 4px solid red;
         outline-offset: 1rem;
       }
@@ -66,21 +59,6 @@ export class BodyElement extends LitElement {
   ): void {
     this.required = this.schema?.required ?? [];
   }
-
-  // private renderBackButton = (
-  //   emphasis: ButtonEmphasis = "high",
-  //   hasArrow = true
-  // ) =>
-  //   when(
-  //     this.path,
-  //     () => html`<button-element
-  //       @click=${() => this.navigate(PATH_UP)}
-  //       size="m"
-  //       .emphasis=${emphasis}
-  //       .iconLeft=${hasArrow ? icons.ARROW_LEFT() : void 0}
-  //       >Back</button-element
-  //     >`
-  //   );
 
   render() {
     console.debug(`[DEBUG] Rendering body.`);
@@ -135,17 +113,119 @@ export class BodyElement extends LitElement {
     );
   }
 
+  private renderProperty(key?: string | number, skipHeader = false) {
+    const value = !isUndefined(key) ? this.value?.[key] : this.value;
+    const schema = navigateSchema(this.schema!, key) as JSONSchema7;
+    const itemType = inferType(schema, value);
+    const title = schema?.title ?? key;
+    const description = schema?.description;
+    const ajv = ajvFactory();
+    const compiled = ajv.compile(schema);
+    const valid = compiled(value);
+    const required = this.required.includes(String(key));
+
+    return html`
+      <label
+        id="#${key}"
+        class="flex flex-col gap-4 w-full ${when(
+          !isUndefined(value) && !valid,
+          () => "error"
+        )}"
+      >
+        ${when(!skipHeader && title, () =>
+          renderLabel(String(title), description, required)
+        )}
+        ${when(
+          PRIMITIVE_TYPES.includes(itemType),
+          () => this.renderPrimitive2(itemType, value, schema, key),
+          () =>
+            this.renderValuePreview2(
+              itemType,
+              value,
+              schema,
+              key,
+              required,
+              valid
+            )
+        )}
+      </label>
+    `;
+  }
+
+  private renderPrimitive2(
+    type: (typeof PRIMITIVE_TYPES)[number],
+    value: any,
+    schema: any,
+    key?: string | number
+  ) {
+    return when(
+      schema?.enum,
+      () => html`<single-dropdown-element
+        @change=${dispatchChange(this, String(key ?? ""))}
+        .options=${((schema?.enum as any[]) ?? []).map((item) => String(item))}
+        .value=${value}
+      ></single-dropdown-element>`,
+      () =>
+        choose(type, [
+          [
+            "string",
+            () => html`<string-element
+              @change=${dispatchChange(this, String(key ?? ""))}
+              .value=${value}
+              .schema=${schema}
+            ></string-element>`,
+          ],
+          [
+            "number",
+            () => html`<number-element
+              @change=${dispatchChange(this, String(key ?? ""))}
+              .value=${value}
+              .schema=${schema}
+            ></number-element>`,
+          ],
+          [
+            "integer",
+            () => html`<number-element
+              @change=${dispatchChange(this, String(key ?? ""))}
+              .value=${value}
+              .schema=${schema}
+            ></number-element>`,
+          ],
+          [
+            "boolean",
+            () => html`<checkbox-element
+              @change=${dispatchChange(this, String(key ?? ""))}
+              .value=${value}
+              .label=${humanizeKey(String(key))}
+            ></checkbox-element>`,
+          ],
+        ])
+    );
+  }
+
   private renderPrimitive(
     type: (typeof PRIMITIVE_TYPES)[number],
     key?: string | number,
     skipHeader = false
   ) {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
-    const schema = navigateSchema(this.schema!, key);
+    const schema = navigateSchema(this.schema!, key) as JSONSchema7;
     const title = schema?.title ?? key;
     const description = schema?.description;
 
-    return html`<label id="#${key}" class="flex flex-col gap-4 w-full">
+    const ajv = ajvFactory();
+    const compiled = ajv.compile(schema);
+    const valid = compiled(value);
+
+    console.log(key, valid, compiled.errors);
+
+    return html`<label
+      id="#${key}"
+      class="flex flex-col gap-4 w-full ${when(
+        !isUndefined(value) && !valid,
+        () => "error"
+      )}"
+    >
       ${when(!skipHeader && title, () =>
         renderLabel(
           String(title),
@@ -258,13 +338,16 @@ export class BodyElement extends LitElement {
     return html`
       <div class="flex flex-col gap-16 items-start">
         ${errors}
-        ${propsUntilComplexType.map(([key, itemType]) => {
-          const value = this.value?.[key];
-          return when(
-            PRIMITIVE_TYPES.includes(itemType),
-            () => this.renderPrimitive(itemType, key),
-            () => this.renderValuePreview(key, value, false)
-          );
+        ${propsUntilComplexType.map(([key]) => {
+          // const value = this.value?.[key];
+
+          return this.renderProperty(key);
+
+          // return when(
+          //   PRIMITIVE_TYPES.includes(itemType),
+          //   () => this.renderPrimitive(itemType, key),
+          //   () => this.renderValuePreview(key, value, false)
+          // );
         })}
         <!-- ${when(!skipAdditionalProperties, () =>
           this.renderAdditionalProperties()
@@ -305,6 +388,80 @@ export class BodyElement extends LitElement {
     `;
   }
 
+  // itemState
+
+  /* Item state:
+   *
+   */
+
+  //
+
+  // - optional and empty
+  // - optional and error
+  // - required
+  // - required and empty
+  // - required and error
+  // - required and filled
+  // - required and filled and error
+
+  private renderValuePreview2(
+    type: (typeof PRIMITIVE_TYPES)[number],
+    value: any,
+    schema: any,
+    key?: string | number,
+    required?: boolean,
+    valid?: boolean
+  ) {
+    // .state=${valid ? "normal" : "error"}
+    // .iconLeft=${valid ? void 0 : icons.ERROR()}
+    return html`
+      ${when(
+        isUndefined(value) && required,
+        () => html` <button-element
+          @click=${() => this.navigate(key as any)}
+          emphasis="high"
+          size="s"
+        >
+          Continue</button-element
+        >`,
+        () => html`
+          <div class="flex gap-2">
+            <button-element
+              class="w-full"
+              @click=${() => this.navigate(key as any)}
+              .icon=${icons.CHEVRON_RIGHT()}
+            >
+              ${humanizeValue(value).map(
+                ([title]) =>
+                  html`<div class="flex gap-2">
+                    <span class="text-slate-800 text-left font-medium"
+                      >${title}</span
+                    >
+                  </div>`
+              )}
+            </button-element>
+
+            ${when(
+              !isUndefined(value),
+              () => html`<button-element
+                .icon=${icons.REMOVE()}
+                @click="${() =>
+                  this.dispatchEvent(
+                    new CustomEvent<ChangeEventDetails>("change", {
+                      detail: {
+                        value: void 0,
+                        path: key as any,
+                      },
+                    })
+                  )}"
+              ></button-element>`
+            )}
+          </div>
+        `
+      )}
+    `;
+  }
+
   private renderValuePreview(
     key: string,
     value: unknown,
@@ -317,6 +474,8 @@ export class BodyElement extends LitElement {
     const valid = compiled(value);
     const description = schema?.description;
     const required = this.required.includes(String(key));
+
+    console.log(key, valid, compiled.errors);
 
     return html`
       <label
