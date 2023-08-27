@@ -186,9 +186,7 @@ export class JsonUiElement extends LitElement {
 
   private handleChange(ev: CustomEvent<any>) {
     const resolvedPath = joinPaths(this.path, ev.detail.path);
-
-    // Make sure the value gets a new reference so willUpdate runs.
-    const newValue = clone(this.value);
+    const newValue = structuredClone(this.value);
     set(newValue, resolvedPath, ev.detail.value);
     this.value = newValue;
     this.resolvedValue = clone(get(this.value, this.path));
