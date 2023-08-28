@@ -93,7 +93,7 @@ export class BodyElement extends LitElement {
       )}
       <div class="h-8"></div>
       ${when(
-        itemType !== "object",
+        itemType !== "object" && !!this.path,
         () => html`<button-element
           @click=${() => this.navigate(PATH_UP)}
           emphasis="high"

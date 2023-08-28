@@ -16,7 +16,15 @@
         presetBtn.innerHTML = "Apply Preset";
 
         Object.assign(el, {
-          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          schema: {
+            type: "array",
+            items: { enum: ["EN", "DE", "FR", "PL"] },
+            minItems: 1,
+            maxItems: 2,
+            default: ["EN"],
+            uniqueItems: true,
+          },
+          // schema: await (await fetch("./fixtures/coa-schema.json")).json(),
           path: location.hash.replace(/#/i, ""),
           value: JSON.parse(localStorage.getItem("JSON_UI_VALUE")),
         });

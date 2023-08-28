@@ -93,7 +93,8 @@ export class JsonUiElement extends LitElement {
     if (expectedRootType === void 0)
       throw new Error("Could not determine base schema type.");
     if (
-      typeof this.value !== expectedRootType ||
+      // TODO: Some types cannot be inferred from value, e.g. integer.
+      inferType(void 0, this.value) !== expectedRootType ||
       isNull(this.value) ||
       isUndefined(this.value)
     ) {
@@ -186,10 +187,14 @@ export class JsonUiElement extends LitElement {
 
   private handleChange(ev: CustomEvent<any>) {
     const resolvedPath = joinPaths(this.path, ev.detail.path);
-    const newValue = structuredClone(this.value);
-    set(newValue, resolvedPath, ev.detail.value);
-    this.value = newValue;
-    this.resolvedValue = clone(get(this.value, this.path));
+
+    if (resolvedPath) {
+      const newValue = structuredClone(this.value);
+      set(newValue, resolvedPath, ev.detail.value);
+      this.value = newValue;
+    } else {
+      this.value = ev.detail.value;
+    }
   }
 
   private toggleSidebar() {

@@ -1,4 +1,5 @@
 import { JSONSchema7TypeName } from "json-schema";
+import { isArray, isNull } from "lodash";
 
 export const PROPERTIES_KEY = "properties";
 export const ADDITIONAL_PROPERTIES_KEY = "additionalProperties";
