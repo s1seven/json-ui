@@ -401,7 +401,7 @@ export class BodyElement extends LitElement {
         ${((this.value as any[]) ?? []).map(
           (_, idx) => html`<li class="ml-6 pl-4">
             <div class="flex gap-4">
-              ${this.renderProperty(idx, true)}
+              ${this.renderProperty(idx, true, true)}
               <button-element
                 .iconLeft=${icons.REMOVE()}
                 @click="${() =>
