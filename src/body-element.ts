@@ -60,9 +60,12 @@ export class BodyElement extends LitElement {
     this.required = this.schema?.required ?? [];
   }
 
+  protected shouldUpdate(): boolean {
+    return !!this.schema;
+  }
+
   render() {
     console.debug(`[DEBUG] Rendering body.`);
-    if (!this.schema) return html`<div>no schema</div>`;
     const itemType = inferType(this.schema!, this.value);
     return html`
       ${choose(
@@ -117,7 +120,7 @@ export class BodyElement extends LitElement {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
     const schema = navigateSchema(this.schema!, key) as JSONSchema7;
     const itemType = inferType(schema, value);
-    const title = schema?.title ?? key;
+    const title = key ?? schema?.title;
     const description = schema?.description;
     const ajv = ajvFactory();
     const compiled = ajv.compile(schema);
@@ -212,12 +215,9 @@ export class BodyElement extends LitElement {
     const schema = navigateSchema(this.schema!, key) as JSONSchema7;
     const title = schema?.title ?? key;
     const description = schema?.description;
-
     const ajv = ajvFactory();
     const compiled = ajv.compile(schema);
     const valid = compiled(value);
-
-    console.log(key, valid, compiled.errors);
 
     return html`<label
       id="#${key}"
@@ -335,23 +335,14 @@ export class BodyElement extends LitElement {
         )
       : [];
 
+    // ${when(!skipAdditionalProperties, () =>
+    //   this.renderAdditionalProperties()
+    // )}
+
     return html`
       <div class="flex flex-col gap-16 items-start">
         ${errors}
-        ${propsUntilComplexType.map(([key]) => {
-          // const value = this.value?.[key];
-
-          return this.renderProperty(key);
-
-          // return when(
-          //   PRIMITIVE_TYPES.includes(itemType),
-          //   () => this.renderPrimitive(itemType, key),
-          //   () => this.renderValuePreview(key, value, false)
-          // );
-        })}
-        <!-- ${when(!skipAdditionalProperties, () =>
-          this.renderAdditionalProperties()
-        )} -->
+        ${propsUntilComplexType.map(([key]) => this.renderProperty(key))}
         ${when(
           !skipBackButton && !firstInvalidComplexType,
           () =>
@@ -507,7 +498,8 @@ export class BodyElement extends LitElement {
                 ${humanizeValue(value).map(
                   ([title]) =>
                     html`<div class="flex gap-2 min-w-0">
-                      <span class="truncate text-slate-800 text-left font-medium"
+                      <span
+                        class="truncate text-slate-800 text-left font-medium"
                         >${title}</span
                       >
                     </div>`

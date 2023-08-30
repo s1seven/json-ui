@@ -16,15 +16,15 @@
         presetBtn.innerHTML = "Apply Preset";
 
         Object.assign(el, {
-          schema: {
-            type: "array",
-            items: { enum: ["EN", "DE", "FR", "PL"] },
-            minItems: 1,
-            maxItems: 2,
-            default: ["EN"],
-            uniqueItems: true,
-          },
-          // schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          // schema: {
+          //   type: "array",
+          //   items: { enum: ["EN", "DE", "FR", "PL"] },
+          //   minItems: 1,
+          //   maxItems: 2,
+          //   default: ["EN"],
+          //   uniqueItems: true,
+          // },
+          schema: await (await fetch("./fixtures/coa-schema.json")).json(),
           path: location.hash.replace(/#/i, ""),
           value: JSON.parse(localStorage.getItem("JSON_UI_VALUE")),
         });
@@ -38,10 +38,29 @@
         });
 
         presetBtn.addEventListener("click", () => {
-          el.value = patchValue(el.value, "Certificate.CertificateLanguages", [
-            "EN",
-            "FR",
-          ]);
+          el.value = {
+            Certificate: {
+              CertificateLanguages: ["EN"],
+              Parties: {
+                Manufacturer: {
+                  City: "Berlin",
+                  Name: "Green Plastics AG",
+                  Email: "s1seven.certificates@gmail.com",
+                  Street: "Kunststoffgasse 1",
+                  Country: "DE",
+                  ZipCode: "10003",
+                  Identifiers: {
+                    VAT: "AT123456789",
+                    DUNS: "",
+                    CageCode: "",
+                  },
+                },
+              },
+              Standard: {
+                Norm: "asdasdasd",
+              },
+            },
+          };
         });
 
         document.querySelector("#actions").appendChild(presetBtn);

@@ -166,6 +166,10 @@ export class JsonUiElement extends LitElement {
       )[0];
     }
 
+    console.log(
+      inferOneOfOption(this.resolvedSchemas.navigated, this.resolvedValue)[0]
+    );
+
     if (updateLevel <= 2) {
       this.resolvedSchemas.resolvedOneOf =
         this.oneOfIndex !== -1
@@ -212,6 +216,8 @@ export class JsonUiElement extends LitElement {
     );
     const { resolvedAnyOf, navigated, resolvedOneOf } = this.resolvedSchemas;
 
+    console.log({ resolvedAnyOf });
+
     return html`
       <div class="flex relative gap-0 items-stretch">
         <div class="w-full">
@@ -224,25 +230,26 @@ export class JsonUiElement extends LitElement {
                   (this.oneOfIndex = ev.detail)}
                 .schema=${navigated}
                 .value=${this.oneOfIndex}
-              ></one-of-element>`,
-              () => html`
-                ${resolvedOneOf.anyOf &&
-                html`<any-of-element
-                  @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
-                    (this.anyOfIndices = ev.detail.value)}
-                  .schema=${navigated}
-                  .value=${this.anyOfIndices}
-                ></any-of-element>`}
-                <body-element
-                  @change=${this.handleChange}
-                  @navigate=${(ev: CustomEvent<string>) =>
-                    (this.path = joinPaths(this.path, ...ev.detail))}
-                  .schema=${resolvedAnyOf}
-                  .value=${this.resolvedValue}
-                  .path=${this.path}
-                ></body-element>
-              `
+              ></one-of-element>`
             )}
+            ${when(
+              resolvedOneOf.anyOf,
+              () => html`<any-of-element
+                @change=${(ev: CustomEvent<ChangeEventDetails<number[]>>) =>
+                  (this.anyOfIndices = ev.detail.value)}
+                .schema=${navigated}
+                .value=${this.anyOfIndices}
+              ></any-of-element>`
+            )}
+
+            <body-element
+              @change=${this.handleChange}
+              @navigate=${(ev: CustomEvent<string>) =>
+                (this.path = joinPaths(this.path, ...ev.detail))}
+              .schema=${resolvedAnyOf}
+              .value=${this.resolvedValue}
+              .path=${this.path}
+            ></body-element>
           </div>
         </div>
         <div>
@@ -254,7 +261,9 @@ export class JsonUiElement extends LitElement {
               <div
                 class="ml-4 border border-slate-400 rounded-sm p-4 box-border text-xs text-slate-800"
               >
-                <pre class="max-w-[420px] overflow-auto"><code class="break-all whitespace-pre-wrap">${unsafeHTML(
+                <pre
+                  class="max-w-[420px] overflow-auto"
+                ><code class="break-all whitespace-pre-wrap">${unsafeHTML(
                   highlightPath(this.value, this.path)
                 )}</code></pre>
                 <button-element
