@@ -124,15 +124,15 @@ export class JsonUiElement extends LitElement {
       console.debug(`🛠️ [DEBUG] No schema update required.`, {
         changedProperties,
       });
-      return;
+    } else {
+      console.debug(
+        `${
+          ["🔴", "🟠", "🟡", "🟢"][updateLevel]
+        } [DEBUG] Performing a level ${updateLevel} schema update.`
+      );
     }
 
-    console.debug(
-      `${
-        ["🔴", "🟠", "🟡", "🟢"][updateLevel]
-      } [DEBUG] Performing a level ${updateLevel} schema update.`
-    );
-
+    // Schema change
     if (updateLevel === 0) {
       this.ajvValidateFn = ajvFactory().compile(this.schema);
       this.ajvValidateFn!(this.value);
@@ -142,6 +142,7 @@ export class JsonUiElement extends LitElement {
       );
     }
 
+    // Path change
     if (updateLevel <= 1) {
       const navigatedSchema = navigateSchema(
         this.resolvedSchemas.resolvedAllOf,
@@ -159,12 +160,11 @@ export class JsonUiElement extends LitElement {
       }
 
       this.dispatchEvent(new CustomEvent("navigate", { detail: this.path }));
-
-      this.oneOfIndex = inferOneOfOption(
-        this.resolvedSchemas.navigated,
-        this.resolvedValue
-      )[0];
     }
+
+    this.oneOfIndex = this.resolvedSchemas.navigated.oneOf
+      ? inferOneOfOption(this.resolvedSchemas.navigated, this.resolvedValue)[0]
+      : -1;
 
     if (updateLevel <= 2) {
       this.resolvedSchemas.resolvedOneOf =
@@ -218,7 +218,7 @@ export class JsonUiElement extends LitElement {
           <div class="grid grid-cols-1 gap-8 flex-1">
             ${this.renderHeader()}
             ${when(
-              navigated.oneOf && this.oneOfIndex === -1,
+              navigated.oneOf,
               () => html`<one-of-element
                 @change=${(ev: CustomEvent<number>) =>
                   (this.oneOfIndex = ev.detail)}
@@ -254,7 +254,9 @@ export class JsonUiElement extends LitElement {
               <div
                 class="ml-4 border border-slate-400 rounded-sm p-4 box-border text-xs text-slate-800"
               >
-                <pre class="max-4-[420px] overflow-auto"><code class="break-all whitespace-pre-wrap">${unsafeHTML(
+                <pre
+                  class="max-4-[420px] overflow-auto"
+                ><code class="break-all whitespace-pre-wrap">${unsafeHTML(
                   highlightPath(this.value, this.path)
                 )}</code></pre>
                 <button-element
