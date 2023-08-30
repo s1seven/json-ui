@@ -433,8 +433,8 @@ export class BodyElement extends LitElement {
             >
               ${humanizeValue(value).map(
                 ([title]) =>
-                  html`<div class="flex gap-2">
-                    <span class="text-slate-800 text-left font-medium"
+                  html`<div class="flex gap-2 min-w-0">
+                    <span class="truncate text-slate-800 text-left font-medium"
                       >${title}</span
                     >
                   </div>`
@@ -508,8 +508,8 @@ export class BodyElement extends LitElement {
               >
                 ${humanizeValue(value).map(
                   ([title]) =>
-                    html`<div class="flex gap-2">
-                      <span class="text-slate-800 text-left font-medium"
+                    html`<div class="flex gap-2 min-w-0">
+                      <span class="truncate text-slate-800 text-left font-medium"
                         >${title}</span
                       >
                     </div>`
