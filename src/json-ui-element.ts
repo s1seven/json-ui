@@ -92,12 +92,18 @@ export class JsonUiElement extends LitElement {
     const expectedRootType = inferType(this.schema, this.value);
     if (expectedRootType === void 0)
       throw new Error("Could not determine base schema type.");
+
     if (
       // TODO: Some types cannot be inferred from value, e.g. integer.
       inferType(void 0, this.value) !== expectedRootType ||
       isNull(this.value) ||
       isUndefined(this.value)
     ) {
+      console.debug(
+        "Root value is of incorrect type. Using default value instead.",
+        this.value,
+        expectedRootType
+      );
       this.value = DEFAULT_VALUES[expectedRootType]();
       this.dispatchEvent(new CustomEvent("change", { detail: this.value }));
     } else if (changedProperties.has("value")) {
@@ -124,14 +130,13 @@ export class JsonUiElement extends LitElement {
       console.debug(`🛠️ [DEBUG] No schema update required.`, {
         changedProperties,
       });
-      return;
+    } else {
+      console.debug(
+        `${
+          ["🔴", "🟠", "🟡", "🟢"][updateLevel]
+        } [DEBUG] Performing a level ${updateLevel} schema update.`
+      );
     }
-
-    console.debug(
-      `${
-        ["🔴", "🟠", "🟡", "🟢"][updateLevel]
-      } [DEBUG] Performing a level ${updateLevel} schema update.`
-    );
 
     if (updateLevel === 0) {
       this.ajvValidateFn = ajvFactory().compile(this.schema);
@@ -166,10 +171,6 @@ export class JsonUiElement extends LitElement {
       )[0];
     }
 
-    console.log(
-      inferOneOfOption(this.resolvedSchemas.navigated, this.resolvedValue)[0]
-    );
-
     if (updateLevel <= 2) {
       this.resolvedSchemas.resolvedOneOf =
         this.oneOfIndex !== -1
@@ -186,6 +187,20 @@ export class JsonUiElement extends LitElement {
       this.resolvedSchemas.resolvedAnyOf = !isEmpty(this.anyOfIndices)
         ? anyOf(this.resolvedSchemas.resolvedOneOf!, this.anyOfIndices!)
         : this.resolvedSchemas.resolvedOneOf;
+    }
+
+    const schemaType = inferType(this.resolvedSchemas.resolvedAnyOf);
+    if (
+      !isUndefined(this.resolvedValue) &&
+      inferType(void 0, this.resolvedValue) !== schemaType &&
+      schemaType
+    ) {
+      console.debug(
+        "Resolved value is of incorrect type. Using default value instead.",
+        this.resolvedValue,
+        schemaType
+      );
+      this.resolvedValue = DEFAULT_VALUES[schemaType]();
     }
   }
 
@@ -215,8 +230,6 @@ export class JsonUiElement extends LitElement {
       this.resolvedValue
     );
     const { resolvedAnyOf, navigated, resolvedOneOf } = this.resolvedSchemas;
-
-    console.log({ resolvedAnyOf });
 
     return html`
       <div class="flex relative gap-0 items-stretch">

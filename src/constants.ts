@@ -14,7 +14,7 @@ export const PATH_UP = Symbol();
 // Additional JSON Schema keywords, allowed for strict validation.
 export const AJV_ALLOWED_KEYWORDS = ["meta:license"] as const;
 
-export const ALL_TYPES: (JSONSchema7TypeName | "enum" | undefined)[] = [
+export const ALL_TYPES: (JSONSchema7TypeName | undefined)[] = [
   "string",
   "number",
   "integer",

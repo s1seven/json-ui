@@ -25,7 +25,8 @@
           //   uniqueItems: true,
           // },
           schema: await (await fetch("./fixtures/coa-schema.json")).json(),
-          path: location.hash.replace(/#/i, ""),
+          // schema: await (await fetch("./fixtures/coa-schema.json")).json(),
+          path: location.hash.replace(/#/i, "").replaceAll("/", "."),
           value: JSON.parse(localStorage.getItem("JSON_UI_VALUE")),
         });
 

@@ -25,7 +25,10 @@ export const inferType = (
   if (schema?.type) return schema.type as JSONSchema7TypeName;
   if (schema?.properties) return "object";
   if (schema?.items) return "array";
-  if (schema?.enum) return "enum";
+  if (schema?.enum) {
+    if (!isArray(schema?.enum)) return inferType(schema?.enum);
+    return inferType(schema?.enum?.[0] as JSONSchema7);
+  }
 
   if (isArray(value)) return "array";
   if (isObject(value)) return "object";

@@ -17,6 +17,7 @@ import {
   PRIMITIVE_TYPES,
   ALL_TYPES,
   PATH_UP,
+  ROOT_PATH,
 } from "./constants";
 import { inferType } from "./parser/infer";
 import { JSONSchema7Value } from "./utils/helper-types";
@@ -67,6 +68,7 @@ export class BodyElement extends LitElement {
   render() {
     console.debug(`[DEBUG] Rendering body.`);
     const itemType = inferType(this.schema!, this.value);
+
     return html`
       ${choose(
         itemType,
@@ -82,17 +84,15 @@ export class BodyElement extends LitElement {
                 ).map(([key, prop]) => [
                   key,
                   inferType(prop, this.value?.[key]),
-                ])
+                ]),
+                false,
+                this.path === ROOT_PATH
               ),
           ],
           ["array", () => this.renderArray()],
+          [undefined, () => html``],
         ],
-        () =>
-          when(
-            PRIMITIVE_TYPES.includes(itemType),
-            () => this.renderPrimitive(itemType),
-            () => html`Unknown type <strong>${itemType}</strong>.`
-          )
+        () => this.renderProperty()
       )}
       <div class="h-8"></div>
       ${when(
@@ -116,9 +116,13 @@ export class BodyElement extends LitElement {
     );
   }
 
-  private renderProperty(key?: string | number, skipHeader = false) {
+  private renderProperty(key?: string | number, skipRemove = false) {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
-    const schema = navigateSchema(this.schema!, key) as JSONSchema7;
+    const schema =
+      typeof key === "number"
+        ? (this.schema!.items as JSONSchema7)
+        : (navigateSchema(this.schema!, key) as JSONSchema7);
+
     const itemType = inferType(schema, value);
     const title = key ?? schema?.title;
     const description = schema?.description;
@@ -135,27 +139,26 @@ export class BodyElement extends LitElement {
           () => "error"
         )}"
       >
-        ${when(!skipHeader && title, () =>
-          renderLabel(String(title), description, required)
-        )}
+        ${when(title, () => renderLabel(String(title), description, required))}
         ${when(
           PRIMITIVE_TYPES.includes(itemType),
-          () => this.renderPrimitive2(itemType, value, schema, key),
+          () => this.renderPrimitive(itemType, value, schema, key),
           () =>
-            this.renderValuePreview2(
+            this.renderValuePreview(
               itemType,
               value,
               schema,
               key,
               required,
-              valid
+              valid,
+              skipRemove
             )
         )}
       </label>
     `;
   }
 
-  private renderPrimitive2(
+  private renderPrimitive(
     type: (typeof PRIMITIVE_TYPES)[number],
     value: any,
     schema: any,
@@ -204,84 +207,6 @@ export class BodyElement extends LitElement {
           ],
         ])
     );
-  }
-
-  private renderPrimitive(
-    type: (typeof PRIMITIVE_TYPES)[number],
-    key?: string | number,
-    skipHeader = false
-  ) {
-    const value = !isUndefined(key) ? this.value?.[key] : this.value;
-    const schema = navigateSchema(this.schema!, key) as JSONSchema7;
-    const title = schema?.title ?? key;
-    const description = schema?.description;
-    const ajv = ajvFactory();
-    const compiled = ajv.compile(schema);
-    const valid = compiled(value);
-
-    return html`<label
-      id="#${key}"
-      class="flex flex-col gap-4 w-full ${when(
-        !isUndefined(value) && !valid,
-        () => "error"
-      )}"
-    >
-      ${when(!skipHeader && title, () =>
-        renderLabel(
-          String(title),
-          description,
-          this.required.includes(String(key))
-        )
-      )}
-      ${when(
-        schema?.enum,
-        () => {
-          const enumOptions = ((schema?.enum as any[]) ?? []).map((item) =>
-            String(item)
-          );
-          return html`<single-dropdown-element
-            @change=${dispatchChange(this, String(key ?? ""))}
-            .options=${enumOptions}
-            .value=${value}
-          ></single-dropdown-element>`;
-        },
-        () =>
-          choose(type, [
-            [
-              "string",
-              () => html`<string-element
-                @change=${dispatchChange(this, String(key ?? ""))}
-                .value=${value}
-                .schema=${schema}
-              ></string-element>`,
-            ],
-            [
-              "number",
-              () => html`<number-element
-                @change=${dispatchChange(this, String(key ?? ""))}
-                .value=${value}
-                .schema=${schema}
-              ></number-element>`,
-            ],
-            [
-              "integer",
-              () => html`<number-element
-                @change=${dispatchChange(this, String(key ?? ""))}
-                .value=${value}
-                .schema=${schema}
-              ></number-element>`,
-            ],
-            [
-              "boolean",
-              () => html`<checkbox-element
-                @change=${dispatchChange(this, String(key ?? ""))}
-                .value=${value}
-                .label=${humanizeKey(String(key))}
-              ></checkbox-element>`,
-            ],
-          ])
-      )}
-    </label>`;
   }
 
   private firstInvalidComplexType = (
@@ -358,53 +283,15 @@ export class BodyElement extends LitElement {
     `;
   };
 
-  private renderAdditionalProperties() {
-    const additionalProperties = this.schema?.[ADDITIONAL_PROPERTIES_KEY];
-    if (additionalProperties === false) return nothing;
-    const propertyKeys = Object.keys(
-      (this.schema?.[PROPERTIES_KEY] as unknown as JSONSchema7Value[]) ?? []
-    );
-    const unspecifiedProperties: [
-      key: string,
-      type: ReturnType<typeof inferType>
-    ][] = Object.entries(this.value ?? {})
-      .filter(([key]) => !propertyKeys.includes(key))
-      .map(([key, value]) => [key, inferType(undefined, value)]);
-
-    return html`
-      ${this.renderObject(unspecifiedProperties, true, true, false, false)}
-      <button-element .iconLeft="${icons.ADD()}"
-        >Add custom field</button-element
-      >
-    `;
-  }
-
-  // itemState
-
-  /* Item state:
-   *
-   */
-
-  //
-
-  // - optional and empty
-  // - optional and error
-  // - required
-  // - required and empty
-  // - required and error
-  // - required and filled
-  // - required and filled and error
-
-  private renderValuePreview2(
+  private renderValuePreview(
     type: (typeof PRIMITIVE_TYPES)[number],
     value: any,
     schema: any,
     key?: string | number,
     required?: boolean,
-    valid?: boolean
+    valid?: boolean,
+    skipRemove = false
   ) {
-    // .state=${valid ? "normal" : "error"}
-    // .iconLeft=${valid ? void 0 : icons.ERROR()}
     return html`
       ${when(
         isUndefined(value) && required,
@@ -433,7 +320,7 @@ export class BodyElement extends LitElement {
             </button-element>
 
             ${when(
-              !isUndefined(value),
+              !isUndefined(value) && !skipRemove,
               () => html`<button-element
                 .icon=${icons.REMOVE()}
                 @click="${() =>
@@ -450,81 +337,6 @@ export class BodyElement extends LitElement {
           </div>
         `
       )}
-    `;
-  }
-
-  private renderValuePreview(
-    key: string,
-    value: unknown,
-    skipHeader = false,
-    skipCta = false
-  ) {
-    const ajv = ajvFactory();
-    const schema = navigateSchema(this.schema!, key) as JSONSchema7;
-    const compiled = ajv.compile(schema);
-    const valid = compiled(value);
-    const description = schema?.description;
-    const required = this.required.includes(String(key));
-
-    return html`
-      <label
-        id="#${key}"
-        class="flex flex-col gap-4 w-full items-start ${when(
-          !isUndefined(value) && !valid,
-          () => "error"
-        )}"
-      >
-        ${when(!skipHeader && key, () =>
-          renderLabel(String(key), description, required)
-        )}
-        ${when(
-          isUndefined(value) && !skipCta && required,
-          () => html` <button-element
-            @click=${() => this.navigate(key)}
-            emphasis="high"
-            size="s"
-          >
-            Continue</button-element
-          >`,
-          () => html`
-            <div class="flex gap-2">
-              <button-element
-                class="w-full min-w-0"
-                @click=${() => this.navigate(key)}
-                .state=${valid ? "normal" : "error"}
-                .iconLeft=${valid ? void 0 : icons.ERROR()}
-                .icon=${icons.CHEVRON_RIGHT()}
-              >
-                ${humanizeValue(value).map(
-                  ([title]) =>
-                    html`<div class="flex gap-2 min-w-0">
-                      <span
-                        class="truncate text-slate-800 text-left font-medium"
-                        >${title}</span
-                      >
-                    </div>`
-                )}
-              </button-element>
-
-              ${when(
-                !isUndefined(value),
-                () => html`<button-element
-                  .icon=${icons.REMOVE()}
-                  @click="${() =>
-                    this.dispatchEvent(
-                      new CustomEvent<ChangeEventDetails>("change", {
-                        detail: {
-                          value: void 0,
-                          path: key,
-                        },
-                      })
-                    )}"
-                ></button-element>`
-              )}
-            </div>
-          `
-        )}
-      </label>
     `;
   }
 
@@ -584,12 +396,8 @@ export class BodyElement extends LitElement {
       <ol class="flex flex-col gap-4 list-decimal">
         ${((this.value as any[]) ?? []).map(
           (value, idx) => html`<li class="ml-6 pl-4">
-            <div class="flex gap-4 items-baseline">
-              ${when(
-                PRIMITIVE_TYPES.includes(itemType),
-                () => this.renderPrimitive(itemType, idx, true),
-                () => this.renderValuePreview(idx.toString(), value, true, true)
-              )}
+            <div class="flex gap-4">
+              ${this.renderProperty(idx, true)}
               <button-element
                 .iconLeft=${icons.REMOVE()}
                 @click="${() =>
