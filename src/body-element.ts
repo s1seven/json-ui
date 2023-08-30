@@ -4,14 +4,12 @@ import {
   TemplateResult,
   css,
   html,
-  nothing,
   unsafeCSS,
 } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import styles from "./index.css?inline";
 import { JSONSchema7 } from "json-schema";
 import {
-  ADDITIONAL_PROPERTIES_KEY,
   DEFAULT_VALUES,
   PROPERTIES_KEY,
   PRIMITIVE_TYPES,
@@ -116,7 +114,11 @@ export class BodyElement extends LitElement {
     );
   }
 
-  private renderProperty(key?: string | number, skipRemove = false) {
+  private renderProperty(
+    key?: string | number,
+    skipRemove = false,
+    skipLabel = false
+  ) {
     const value = !isUndefined(key) ? this.value?.[key] : this.value;
     const schema =
       typeof key === "number"
@@ -134,12 +136,14 @@ export class BodyElement extends LitElement {
     return html`
       <label
         id="#${key}"
-        class="flex flex-col gap-4 w-full ${when(
+        class="flex min-w-0 flex-col gap-4 w-full ${when(
           !isUndefined(value) && !valid,
           () => "error"
         )}"
       >
-        ${when(title, () => renderLabel(String(title), description, required))}
+        ${when(title && !skipLabel, () =>
+          renderLabel(String(title), description, required)
+        )}
         ${when(
           PRIMITIVE_TYPES.includes(itemType),
           () => this.renderPrimitive(itemType, value, schema, key),
@@ -395,7 +399,7 @@ export class BodyElement extends LitElement {
       ${criteria}
       <ol class="flex flex-col gap-4 list-decimal">
         ${((this.value as any[]) ?? []).map(
-          (value, idx) => html`<li class="ml-6 pl-4">
+          (_, idx) => html`<li class="ml-6 pl-4">
             <div class="flex gap-4">
               ${this.renderProperty(idx, true)}
               <button-element
