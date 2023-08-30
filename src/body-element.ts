@@ -427,7 +427,7 @@ export class BodyElement extends LitElement {
         () => html`
           <div class="flex gap-2">
             <button-element
-              class="w-full"
+              class="w-full min-w-0"
               @click=${() => this.navigate(key as any)}
               .icon=${icons.CHEVRON_RIGHT()}
             >
@@ -475,8 +475,6 @@ export class BodyElement extends LitElement {
     const description = schema?.description;
     const required = this.required.includes(String(key));
 
-    console.log(key, valid, compiled.errors);
-
     return html`
       <label
         id="#${key}"
@@ -500,7 +498,7 @@ export class BodyElement extends LitElement {
           () => html`
             <div class="flex gap-2">
               <button-element
-                class="w-full"
+                class="w-full min-w-0"
                 @click=${() => this.navigate(key)}
                 .state=${valid ? "normal" : "error"}
                 .iconLeft=${valid ? void 0 : icons.ERROR()}
