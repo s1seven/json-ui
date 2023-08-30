@@ -1,39 +1,20 @@
-import {
-  assign,
-  get,
-  isArray,
-  isObject,
-  isString,
-  mapValues,
-  omit,
-} from "lodash";
+import { assign, get, isArray, isObject, mapValues, omit } from "lodash";
 import { JSONSchema7Value } from "../utils/helper-types";
 import { REF_KEY } from "../constants";
 import { JSONSchema7 } from "json-schema";
 
 export const resolveRefs = (schema: JSONSchema7): JSONSchema7 => {
-  const cache = (() => {
-    const cacheMap = new Map<string, JSONSchema7>();
-    return (path: string) => {
-      if (cacheMap.has(path)) return cacheMap.get(path);
-      const res = get(schema, path);
-      cacheMap.set(path, res);
-      return res;
-    };
-  })();
-
-  const resolve = <T extends JSONSchema7Value>(item: T): T =>
-    !isObject(item)
-      ? item
-      : isArray(item)
-      ? (item.map(resolve) as T)
-      : (mapValues(
-          assign(
-            omit(item, REF_KEY),
-            isString(item[REF_KEY]) ? cache(refToPath(item[REF_KEY])) : {}
-          ),
-          resolve
-        ) as T);
+  const cache = new Map<string, JSONSchema7Value>();
+  const resolve = <T extends JSONSchema7Value>(item: T): T => {
+    if (!isObject(item)) return item;
+    if (isArray(item)) return item.map(resolve) as T;
+    const ref = item[REF_KEY] as string | undefined;
+    if (!ref) return mapValues(item, resolve) as T;
+    if (cache.has(ref)) return cache.get(ref) as T;
+    const resolvedValue = resolve(get(schema, refToPath(ref)));
+    cache.set(ref, resolvedValue);
+    return assign(mapValues(omit(item, REF_KEY), resolve) as T, resolvedValue);
+  };
   return resolve(schema);
 };
 
