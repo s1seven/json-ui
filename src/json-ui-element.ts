@@ -166,7 +166,8 @@ export class JsonUiElement extends LitElement {
       ? inferOneOfOption(this.resolvedSchemas.navigated, this.resolvedValue)[0]
       : -1;
 
-    if (updateLevel <= 2) {
+    // TODO: This always reloads the oneOf schema even if it hasn't changed. Find a better solution.
+    if (updateLevel <= 2 || this.oneOfIndex !== -1) {
       this.resolvedSchemas.resolvedOneOf =
         this.oneOfIndex !== -1
           ? oneOf(this.resolvedSchemas.navigated, this.oneOfIndex)
@@ -178,7 +179,8 @@ export class JsonUiElement extends LitElement {
       );
     }
 
-    if (updateLevel <= 3) {
+    // TODO: This always reloads the oneOf schema even if it hasn't changed. Find a better solution.
+    if (updateLevel <= 3 || this.oneOfIndex !== -1) {
       this.resolvedSchemas.resolvedAnyOf = !isEmpty(this.anyOfIndices)
         ? anyOf(this.resolvedSchemas.resolvedOneOf!, this.anyOfIndices!)
         : this.resolvedSchemas.resolvedOneOf;
