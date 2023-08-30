@@ -11,7 +11,11 @@ export const resolveRefs = (schema: JSONSchema7): JSONSchema7 => {
     const ref = item[REF_KEY] as string | undefined;
     if (!ref) return mapValues(item, resolve) as T;
     if (cache.has(ref)) return cache.get(ref) as T;
-    const resolvedValue = resolve(get(schema, refToPath(ref)));
+
+    const refVal = get(schema, refToPath(ref));
+    if (!isObject(refVal)) return refVal;
+    cache.set(ref, {});
+    const resolvedValue = resolve(refVal);
     cache.set(ref, resolvedValue);
     return assign(mapValues(omit(item, REF_KEY), resolve) as T, resolvedValue);
   };
