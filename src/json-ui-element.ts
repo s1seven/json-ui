@@ -262,7 +262,7 @@ export class JsonUiElement extends LitElement {
                 class="ml-4 border border-slate-400 rounded-sm p-4 box-border text-xs text-slate-800"
               >
                 <pre
-                  class="max-w-[420px] overflow-auto"
+                  class="max-h-[420px] overflow-auto"
                 ><code class="break-all whitespace-pre-wrap">${unsafeHTML(
                   highlightPath(this.value, this.path)
                 )}</code></pre>
