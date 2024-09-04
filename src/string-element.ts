@@ -1,9 +1,8 @@
-import { LitElement, TemplateResult, html, unsafeCSS } from "lit";
+import { TemplateResult, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import styles from "./index.css?inline";
-import { JSONSchema7 } from "json-schema";
 import IMask from "imask";
-import Ajv from "ajv";
+import Ajv2019 from 'ajv/dist/2019';
+import draft7MetaSchema from 'ajv/dist/refs/json-schema-draft-07.json';
 import addFormats from "ajv-formats";
 import { dispatchValueChanged } from "./pure-functions/dispatch-value-changed";
 import { BaseElement } from "./base-element";
@@ -95,7 +94,8 @@ export class StringElement extends BaseElement<string> {
   }
 
   validate() {
-    const ajv = new Ajv();
+    const ajv = new Ajv2019();
+    ajv.addMetaSchema(draft7MetaSchema);
     addFormats(ajv);
     const validate = ajv.compile(this.schema);
     return validate(this.value) ? void 0 : validate.errors;
