@@ -28,7 +28,7 @@ export class StepperElement extends BaseElement<any> {
     return html`
       <div class="grid grid-cols-2">
         <div>
-          ${this.paths.map((path, i, arr) => {
+          ${this.paths.map((path, i, _arr) => {
             const key = path.at(-1) as string;
             // const prevItem = arr[i - 1]?.at(-1) as string;
 

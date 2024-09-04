@@ -19,7 +19,7 @@ export class AnyElement extends BaseElement<any> {
   @property({ type: String })
   readonly key?: string;
 
-  render() {
+  render(): TemplateResult {
     const schema = resolveAllOf(
       resolveLocalReferences(this.baseSchema, this.schema, 5),
       5

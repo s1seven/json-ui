@@ -1,10 +1,8 @@
-import { html, unsafeCSS } from "lit";
+import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import styles from "./index.css?inline";
 
 import type { JSONSchema7 } from "json-schema";
 import { BaseElement } from "./base-element";
-import { dispatchValueChanged } from "./pure-functions/dispatch-value-changed";
 
 /**
  * An object.
