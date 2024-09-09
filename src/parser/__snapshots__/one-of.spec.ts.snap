@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it matches the snapshot 1`] = `
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "company": {
+      "type": "string",
+    },
+    "employees": {
+      "minimum": 1,
+      "type": "number",
+    },
+    "school": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "company",
+    "employees",
+  ],
+  "title": "Person",
+  "type": "object",
+}
+`;
+
+exports[`oneOf options parsed correctly 1`] = `
+[
+  {
+    "isSelected": false,
+    "title": "Option 0",
+  },
+  {
+    "isSelected": true,
+    "title": "Option 1",
+  },
+]
+`;

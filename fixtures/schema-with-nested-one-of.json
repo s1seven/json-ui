@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "person": {
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "student": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "properties": {
+                    "level": {
+                      "enum": [
+                        "undergraduate",
+                        "postgraduate"
+                      ]
+                    },
+                    "course": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "level",
+                    "course"
+                  ]
+                },
+                {
+                  "properties": {
+                    "partTime": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "partTime"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "student"
+          ]
+        },
+        {
+          "properties": {
+            "employee": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "string"
+                },
+                "department": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "position",
+                "department"
+              ]
+            }
+          },
+          "required": [
+            "employee"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "person"
+  ]
+}

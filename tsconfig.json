@@ -6,7 +6,17 @@
     "module": "ESNext",
     "lib": ["ES2022", "ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-
+    "esModuleInterop": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@s1seven/json-ui/utils": ["utils/index.ts"],
+      "@s1seven/json-ui/parser": ["parser/index.ts"],
+      "@s1seven/json-ui/ui": ["ui/index.ts"],
+      "@s1seven/json-ui/core": ["index.ts"],
+    },
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -20,5 +30,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts"]
 }

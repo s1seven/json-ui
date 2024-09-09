@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/product",
+  "title": "Person",
+  "anyOf": [
+    {
+      "title": "Name and age",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "age": { "type": "number", "minimum": 0 }
+      },
+      "required": ["name", "age"]
+    },
+    {
+      "title": "Id",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      },
+      "required": ["id"]
+    },
+    {
+      "title": "List of strings",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    {
+      "title": "Number string",
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    }
+  ]
+}
